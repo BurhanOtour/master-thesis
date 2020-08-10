@@ -28,13 +28,17 @@ Despite the previously mentioned attempts to minimize the size of Hypertrie, the
 
 The purpose of the following approach is to try to reach a more space-efficient Hypertrie\todo{Continue here}.
 
-\section{Compressed Hypertrie Node Representations}
+\section{Compressed Hypertrie Nodes}
 
 In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix\todo{define key suffix}. Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
 
 From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
 
-\paragraph{Depth 3 Node}
+\subsection{Features}
+
+\subsection{Internal Node Representations}
+
+\paragraph{Depth 3 Node} This node is the root node.
 
 \paragraph{Depth 2 Node}
 
