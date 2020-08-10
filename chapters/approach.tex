@@ -1,0 +1,45 @@
+\chapter{Space Reduction Approach}
+\label{ch:approach}
+
+This part of the thesis discusses the approach to substantially mitigates the space inefficiency characteristic of Hypertrie.  
+The technique relies mainly on compressing a Hypertire path with specific characteristics. 
+Worth mentioning that the approach does not neglect the other attempts already realized to minimize Hypertrie memory footprint. 
+In contrast, it can be considered an added feature that further contributes to the space reduction of the overall Hypertrie data structure. 
+
+\todo{Chapter structure "revisit"}In this chapter, I deliver a motivation to the approach. Afterward, I discuss the new Hypertrie internal nodes' design needed to realize the path compression feature. Finally, algorithms defining the behaviors of the newly designed Hypertrie are also presented. 
+
+
+\section{Motivation}
+
+Despite its operational efficiency, Hypertrie performance comes not without a trade-off. 
+Since Hypertrie is a special kind of a Trie data structure, it inherits some of the fundamental problems of  Tries. 
+One of these problems is the excessive space utilization in a worst-case scenario.  \\
+
+
+The current design and implementation of Hypertrie, however, mitigates the space inefficiency characteristic in two ways. 
+First, for each tensor dimension mapping in each node, the Hypertrie uses custom map data structures instead of arrays or linked lists to store the keys. 
+By using a map, Hypertrie's nodes only stores keys that form prefixes to already existed paths. 
+In contrast, arrays utilization in normal Tries considers the whole alphabet set in each node with many array entries store pointers that refer to null\todo{cite!}.  \\
+
+The adoption of maps in Hypertrie also delivers extra performance as looking up keys in a carefully designed map is nearly constant compared to linked list search where it has a linear complexity $O(n)$. 
+The other solution realized by Hypertrie to reduce the overall space requirement is to store equal nodes (Subhypertrie) only once. In this way, Hypertrie achieves a moderate level of compression in practice. \\
+
+Despite the previously mentioned attempts to minimize the size of Hypertrie, the excessive memory requirement is still a bottleneck. The case can be witnessed when the set of RDF triples needed to be indexed by Hypertrie increases in size with less overlapping between its elements. As a result, many intermediate nodes store map with a single entry for a particular dimension where the entry hosts a space for key and a pointer. This becomes a space redundancy issue when the leaf node referenced by the pointer has one key only. \\ 
+
+The purpose of the following approach is to try to reach a more space-efficient Hypertrie\todo{Continue here}.
+
+\section{Compressed Hypertrie Node Representations}
+
+In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix\todo{define key suffix}. Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
+
+From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
+
+\paragraph{Depth 3 Node}
+
+\paragraph{Depth 2 Node}
+
+\paragraph{Depth 1 Node}
+
+\subsection{Node Expansion}
+
+\section{Algorithms}
