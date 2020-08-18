@@ -17,7 +17,7 @@ One of these problems is the excessive space utilization in a worst-case scenari
 
 
 The current design and implementation of Hypertrie, however, mitigates the space inefficiency characteristic in two ways. 
-First, for each tensor dimension mapping in each node, the Hypertrie uses custom map data structures instead of arrays or linked lists to store the keys. 
+First, for each tensor dimension mapping in each node, the Hypertrie uses custom hash map data structures instead of arrays or linked lists to store the keys. 
 By using a map, Hypertrie's nodes only stores keys that form prefixes to already existed paths. 
 In contrast, arrays utilization in normal Tries considers the whole alphabet set in each node with many array entries store pointers that refer to null\todo{cite!}.  \\
 
@@ -38,7 +38,7 @@ From programming point of view, the redesign of Hypertrie nodes' structures is l
 
 \subsection{Internal Node Representations}
 
-\paragraph{Depth 3 Node} This node is the root node.
+\paragraph{Depth 3 Node} There exists a single root node (depth 3 node) in Hypertrie.
 
 \paragraph{Depth 2 Node}
 
