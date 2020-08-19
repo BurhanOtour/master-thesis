@@ -6,6 +6,8 @@ The technique relies mainly on compressing a Hypertire path with specific charac
 Worth mentioning that the approach does not neglect the other attempts already realized to minimize Hypertrie memory footprint. 
 In contrast, it can be considered an added feature that further contributes to the space reduction of the overall Hypertrie data structure. 
 
+\todo{Talk about where my programming work resides?}
+
 \todo{Chapter structure "revisit"}In this chapter, I deliver a motivation to the approach. Afterward, I discuss the new Hypertrie internal nodes' design needed to realize the path compression feature. Finally, algorithms defining the behaviors of the newly designed Hypertrie are also presented. 
 
 
@@ -28,6 +30,57 @@ Despite the previously mentioned attempts to minimize the size of Hypertrie, the
 
 The purpose of the following approach is to try to reach a more space-efficient Hypertrie\todo{Continue here}.
 
+\section{Basic Concept}
+
+The purpose of this section is to give a better intuition on the idea of path compression.  \\
+
+Assuming we want to store the set of RDF triples in listing \ref{lst:example}, presented in Turtle syntax, in our space-efficient Hypertrie: 
+
+\begin{lstlisting}[caption={An example set of RDF triples},label={lst:example}]
+@prefix rel: <http://www.example.com/schemas/relationship/> .
+@prefix ex: <http://www.example.com/schemas/entities/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Germany rel:capital ex:Berlin .
+ex:USA rel:capital ex:Washington_DC
+ex:USA rel:political_city ex:Washington_DC
+ex:Germany rel:population "82.79e6"^^xsd:integer	
+\end{lstlisting}
+
+Tentris do not store the actual values of RDF terms (RTs). Instead, it stores their associated identifiers. 
+For generating identifiers, a bijective function $id: RT \to N$ is used. 
+For the example of RDF data above, a possible mapping for the terms used is given below: \\
+
+\begin{center}
+	\begin{tabular}{ |c|c| } 
+		\hline
+		$RT$ & $id$ \\
+		\hline
+		ex:Germany & 17 \\ 
+		rel:capital & 4 \\ 
+		ex:Berlin & 30 \\ 
+		ex:USA & 20 \\
+		ex:Washington\_DC & 40 \\
+		rel:political\_city & 5 \\
+		rel:population & 6 \\
+		82.79e6 (integer) & 35 \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\begin{figure}[h]
+	\centering
+	\vspace{-1in}
+	\includegraphics[width=1\textwidth]{figures/example.jpg}
+	\caption{Storing RDF in space-efficient Hypertrie}
+	\label{fig:example_compressed_trie}
+\end{figure}
+
+The Hypertrie will store the triple as shown in Figure \ref{fig:example_compressed_trie},  when the path compression technique is applied. It is straightforward to notice that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
+As a result, the tree height is cut down, and a substantial amount of memory is saved by storing objects in-place instead of storing them on the heap. 
+So, the memory for the pointer to the object on the heap is saved. 
+The same method is applied for the root node where keys for a specific dimension are branched by a \textit{lonely path}, i.e. a key path where each element has a single child element.
+
 \section{Compressed Hypertrie Nodes}
 
 In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix\todo{define key suffix}. Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
@@ -39,7 +92,7 @@ From programming point of view, the redesign of Hypertrie nodes' structures is l
 \subsection{Features}
 During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
 The compressed Hypertrie is \textbf{cache-conscious}. 
-That is the frequently accessed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
+That is the frequently accessed compressed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
 
 In worst case, where no utilization of path compression occurred (all triples keys overlap)
 
@@ -53,7 +106,7 @@ The compressed key path container implementation varies depending on the node de
 The idea of having different internal representations comes from the fact that, based on the current structure of nodes on depth two, I found that there is no need to add an additional structure that serves as a container for the key path. 
 Instead, I exploit the space dedicated to pointer value existed as a value in the hash table\todo{discuss the existence of Hypertire structure} of store the compressed key path.\todo{ALEX: is this sentence scientifically accurate?} \\ 
 
-\todo{ALEX: Why using tagged pointer for internal nodes saves space}
+\todo{ALEX: Why using tagged pointer for internal nodes saves space (hash tables already have initial space values?)}
 
 Since Hypertrie has two depths for its internal nodes, we can distinguish two variants of internal node representations: 
 
