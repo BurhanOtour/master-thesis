@@ -32,18 +32,43 @@ The purpose of the following approach is to try to reach a more space-efficient 
 
 In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix\todo{define key suffix}. Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
 
+\todo{Talk about the Hypertrie node compressed path container}
+
 From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
 
 \subsection{Features}
+During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
+The compressed Hypertrie is \textbf{cache-conscious}. 
+That is the frequently accessed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
+
+In worst case, where no utilization of path compression occurred (all triples keys overlap)
 
 \subsection{Internal Node Representations}
 
-\paragraph{Depth 3 Node} There exists a single root node (depth 3 node) in Hypertrie.
+Now we come to the part where the internal structure of Hypertrie nodes are discussed. 
+In my approach, it is a requirement to realize the container concept for each node\footnote{Leaf nodes are not considered.} . 
+As a result, each inner node should still be able to expand at certain edges to sub Hypertrie nodes while maintaining a compressed key path in its bounded container for other edges. \\
 
-\paragraph{Depth 2 Node}
+The compressed key path container implementation varies depending on the node depth. 
+The idea of having different internal representations comes from the fact that, based on the current structure of nodes on depth two, I found that there is no need to add an additional structure that serves as a container for the key path. 
+Instead, I exploit the space dedicated to pointer value existed as a value in the hash table\todo{discuss the existence of Hypertire structure} of store the compressed key path.\todo{ALEX: is this sentence scientifically accurate?} \\ 
 
-\paragraph{Depth 1 Node}
+\todo{ALEX: Why using tagged pointer for internal nodes saves space}
+
+Since Hypertrie has two depths for its internal nodes, we can distinguish two variants of internal node representations: 
+
+\paragraph{Depth 3 Node} There exists a single root node (depth 3) in Hypertrie.
+
+\paragraph{Depth 2 Node} 
 
 \subsection{Node Expansion}
 
 \section{Algorithms}
+
+\paragraph{Key Insertion} 
+\paragraph{Key Retrieval}
+\paragraph{Slicing} 
+\paragraph{Virtual Nodes}
+\paragraph{Diagonal}
+
+\section{Storage Discussion}
