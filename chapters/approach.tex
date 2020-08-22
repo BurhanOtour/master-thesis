@@ -98,11 +98,6 @@ We reduce the space requirement of Hypertrie by collapsing Hyptertrie nodes to \
 
 From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
 
-\subsection{Features} \todo{Move -> Evaluation chapter with "discussion"}
-During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
-The compressed Hypertrie is \textbf{cache-conscious}. 
-That is the frequently accessed compressed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
-
 \subsection{Internal Node Representations}
 
 Now I come to the part where the internal structure of space-efficient Hypertrie nodes are discussed. 
@@ -131,15 +126,17 @@ As a result, it is important to maintain the order of the elements in the compre
 \todo{Talk about hash table capacity}
 Considering the number of internal nodes, it becomes unfeasible, assigning an extra set of hash tables for each node that serve as key part chains containers. \\
 
-To realize the container concept, we exploit the fact that key suffixes for edges in $d=2$ node comprise a single key part.
+To realize the container concept, we exploit the fact that key suffixes for edges in $d=2$ $Node_{2}$ node comprise a single key part.
 Hence, we could reuse the space already booked to store the pointers to child nodes (leafs) to hold the suffixed key part.
 For the pointer $ptr_{j}$ associated with the edge $k_{j}$ to serve the purpose of either pointing to a child node or holding an integer value, we make it a tagged pointer (cf. \ref{sec:preliminaries:pointertagging}). \\
 
-Consequently, child pointers $ptr_{j} = (value, tag)$ for edges in depth=2 nodes carry two pieces of information. (1) A $value$  where either an address or integer value is held. (2) A $tag$ that indicates whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
+Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2}$ are denoted by $ptr_{j} = (value, tag)$. Such pointers carry two pieces of information. (1) A $value$ is the actual payload of bits, which can be viewed as either a memory address or a raw integer value depending on the tag value. (2) A $tag$ is the value held in the least significant bits (LSB) indicating whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
 
-\subsubsection{Node Expansion}
+\subsection{Node Expansion}
+Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
 
-\subsubsection{Virtual Nodes}
+\subsection{Virtual Nodes}
+Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.
 
 \begin{figure}
 	\centering
@@ -160,7 +157,9 @@ Consequently, child pointers $ptr_{j} = (value, tag)$ for edges in depth=2 nodes
 \end{figure}
 
 \section{Algorithms}
-This is a text for algorithms
+This is a text for algorithms. 
+This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. 
+This is a text for algorithms. This is a text for algorithms. This is a text for algorithms.
 
 \paragraph{Key Insertion} 
 \paragraph{Key Retrieval}
@@ -172,4 +171,7 @@ This is a text for algorithms
 
 \todo{ALEX: Whether we skip that to the evaluation}
 Best case is easy. all triples are stored in the root node???
+During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
+The compressed Hypertrie is \textbf{cache-conscious}. 
+That is the frequently accessed compressed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
 
