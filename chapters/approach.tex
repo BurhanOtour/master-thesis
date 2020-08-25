@@ -136,7 +136,16 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2
 Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
 
 \subsection{Virtual Nodes}
-Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text. $VNode_{j}$
+Due to the fact that some paths in Hypertrie are collapsed to a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement Hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
+
+A straight forward solution is to return the container representation of the collapsed path (array, int value) from the slicing call. However, that contradicts with slicing function contract defined in the Hypertrie interface which states that slicing always return a child node $d$. Also, following this approach will add extra code complexity on handling the different types of returned values from slicing. It will also force us to define a method for each returned type from slicing resulting in substantial amount of code redundancy.  \\
+
+A clean solution is to wrap the defined key path containers in a special type of Hypertrie nodes. The wrapper realizes all the methods defined in the Hypertrie interface. As a result, we treat slicing operations uniformally. I call these wrappers \textbf{virtual nodes}. \\
+
+Example of virtual nodes in depth = 3 \\
+
+The same goes with depth = 2 nodes. Where slicing returns a virtual node around the bound key part value or an actual pointer to a leaf node. \\
+
 
 \begin{figure}
 	\centering
