@@ -136,7 +136,7 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2
 Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
 
 \subsection{Virtual Nodes}
-Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.
+Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text. $VNode_{j}$
 
 \begin{figure}
 	\centering
@@ -157,15 +157,104 @@ Node Virtual text.Node Virtual text.Node Virtual text.Node Virtual text.Node Vir
 \end{figure}
 
 \section{Algorithms}
-This is a text for algorithms. 
-This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. This is a text for algorithms. 
-This is a text for algorithms. This is a text for algorithms. This is a text for algorithms.
+The change in the internal nodes representations in the compressed version of Hypertrie leads to change in how we define its behavior. 
+Hence, the new realization add the logic necessary to consider the compressed paths containers. 
+At the same time, the logic has to have the same contract defined in the original Hypertrie interface. 
+Following that approach will allow us to integrate the new Hypertrie implementation into the Tentris system efficiently. \\
 
-\paragraph{Key Insertion} 
-\paragraph{Key Retrieval}
-\paragraph{Slicing} 
+Next, I list the main algorithms that realize the core behaviors of Hypertrie when the space reduction approach is applied. The great proportion of my work was on expanding the code base of Hypertrie project to adapt the key path compression approach including the implementation of the accompanying algorithms\footnote{In this section, I list only the main algorithms}.
 
-\paragraph{Diagonal}
+\subsection{Key Search}
+A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a path from a $Node_{d}$ to a leaf node where $d$ is the node depth\todo{Omit the redefinition of d as I did that earlier}. In other words, if $key$ is a non-zero entry in the tensor $T = h^{-1} (Node_{d})$\todo{Need a definition}. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node. \\
+
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts $k_{i} \in K_{i}$ of size 3}
+	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\SetKwFunction{KwFn}{node3\_key\_retrieval}
+    \KwFn{node3, depth, key} \;
+    \Begin{
+    	$p_{min} \gets\;$\texttt{minCardPos(}$node3$\texttt{)} \;
+    	$k_{i} \gets key[p_{min}]$ \;
+    	
+		$arr_{i} \gets HTComm_{p_{min}}[k_{i}]$\;
+		\If{$arr_{i}\;!=NULL$}{
+			$l \gets 0$ \;
+			$c \gets 0$ \;
+			\While{$l < depth$}{
+				\eIf{$l\;==\; p_{min}$}{
+					$l = l + 1$\;
+				}{
+					\If{$arr_{i}[c]\; != \;key[l]$}{
+						\textbf{return} $false$\;
+					}
+					$l = l + 1$ \;
+					$c = c + 1$ \;
+				}
+			}
+			\textbf{return} $true$\;
+		}
+		$child_{i} \gets HT_{p_{min}}[k_{i}]$\;
+		\eIf{$child_{i}\;!=\; NULL$}{
+			$subkey \gets <0,0>$\;
+			$l \gets 0$ \;
+			$c \gets 0$ \;
+			\While{$l < depth$}{
+				\eIf{$l\;==\; p_{min}$}{
+					$l = l + 1$\;
+				}{
+					$subkey[c] \gets key[l]$\;
+					$l = l + 1$ \;
+					$c = c + 1$ \;
+				}
+			}
+			\textbf{return} \texttt{node2\_key\_retrieval(}$child_{i}, 2, subkey$\texttt{)}\;
+		}{
+			\textbf{return} $false$\;
+		}
+	}
+\caption{\sc Key Retrieval in the root node}
+\label{algo:key_retrieval_depth3}
+
+\end{algorithm}
+
+
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node2$: a depth 2 node, $depth$: current node depth, $key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
+	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\SetKwFunction{KwFn}{node2\_key\_retrieval}
+	\KwFn{node2, depth, key} \;
+	\Begin{
+		$p_{min} \gets\;$\texttt{minCardPos(}$node3$\texttt{)} \;
+		$k_{i} \gets key[p_{min}]$ \;
+		$ptr_{i} \gets HT{p_{min}}[k_{i}]$\;
+		\lIf{$ptr_{i}\; ==\; NULL$}{\textbf{return} false}
+		$(value_{i}, tag_{i}) \gets ptr_{i}$ \;
+		$next\_pos \gets (p_{min} + 1) \;\% \;2$\;
+		\eIf{$tag_{i} == INT\_TAG$}{
+	    	\textbf{return} $value_{i} == key[next\_pos] $
+		}{
+			$subkey \gets <key[next\_pos]>$\;
+			$child_{i} \gets $ \texttt{getPointer(}$value_{i}$\texttt{)}\;
+			\textbf{return} \texttt{node1\_key\_retrieval(}$child_{i}, 1, subkey$\texttt{)}\;
+	    }
+	}
+	\caption{\sc Key Retrieval in depth 2 Nodes}
+	\label{algo:key_retrieval_depth2}
+	
+\end{algorithm}
+
+
+Some text after. \\
+
+\subsection{Key Insertion} 
+
+\subsection{Slicing} 
+
+\subsection{Diagonal}
 
 \section{Storage Discussion}
 
