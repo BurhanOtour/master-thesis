@@ -83,7 +83,6 @@ As a result, the tree height is cut down, and a substantial amount of memory is 
 The same method is applied for the root node where keys for a specific dimension are branched by a \textit{lonely path}, i.e. a key path where each element has a single child element. \\
 
 \section{Compressed Hypertrie Nodes}
-
 In order to achieve path compression in Hypertrie, fundamental design changes need to take place. 
 By that, we can enable the node to store the entire key suffix\todo{define key suffix}. 
 Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
@@ -92,14 +91,14 @@ We create \textbf{Adaptive Hypertrie nodes}. \\
 
 Concretely, each node must hold internal \textbf{containers} where key suffixes can be stored. \\
 
-We reduce the space requirement of Hypertrie by collapsing Hyptertrie nodes to \textbf{static containers}s. \\
+We reduce the space requirement of Hypertrie by collapsing Hyptertrie nodes to. \\
 
 \todo{Talk about the Hypertrie node compressed path container}
 
 From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
 
 \subsection{Internal Node Representations}
-
+\label{ch:approach_node_structure}
 Now I come to the part where the internal structure of space-efficient Hypertrie nodes are discussed. 
 In my approach, it is a requirement to realize the container concept for each node\footnote{Leaf nodes are not considered.} . 
 As a result, each inner node should still be able to expand at certain edges to sub Hypertrie nodes while maintaining a compressed key path in its bounded container for other edges. \\
@@ -132,20 +131,6 @@ For the pointer $ptr_{j}$ associated with the edge $k_{j}$ to serve the purpose 
 
 Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2}$ are denoted by $ptr_{j} = (value, tag)$. Such pointers carry two pieces of information. (1) A $value$ is the actual payload of bits, which can be viewed as either a memory address or a raw integer value depending on the tag value. (2) A $tag$ is the value held in the least significant bits (LSB) indicating whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
 
-\subsection{Node Expansion}
-Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
-
-\subsection{Virtual Nodes}
-Due to the fact that some paths in Hypertrie are collapsed to a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement Hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
-
-A straight forward solution is to return the container representation of the collapsed path (array, int value) from the slicing call. However, that contradicts with slicing function contract defined in the Hypertrie interface which states that slicing always return a child node $d$. Also, following this approach will add extra code complexity on handling the different types of returned values from slicing. It will also force us to define a method for each returned type from slicing resulting in substantial amount of code redundancy.  \\
-
-A clean solution is to wrap the defined key path containers in a special type of Hypertrie nodes. The wrapper realizes all the methods defined in the Hypertrie interface. As a result, we treat slicing operations uniformally. I call these wrappers \textbf{virtual nodes}. \\
-
-Example of virtual nodes in depth = 3 \\
-
-The same goes with depth = 2 nodes. Where slicing returns a virtual node around the bound key part value or an actual pointer to a leaf node. \\
-
 
 \begin{figure}
 	\centering
@@ -155,8 +140,6 @@ The same goes with depth = 2 nodes. Where slicing returns a virtual node around 
 	\label{fig:compressed_depth_3_node}
 \end{figure}
 
-
-
 \begin{figure}
 	\centering
 	\vspace{-1in}
@@ -164,6 +147,123 @@ The same goes with depth = 2 nodes. Where slicing returns a virtual node around 
 	\caption{Depth 2 Node}
 	\label{fig:compressed_depth_2_node}
 \end{figure}
+
+\subsection{Node Expansion}
+Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
+
+\subsection{Virtual Nodes}
+Due to the fact that some key paths in Hypertrie are collapsed into a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement Hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
+
+A straight forward solution is to return the container representation of the collapsed path (array, int value) from the slicing call. However, that contradicts with slicing function contract defined in the Hypertrie interface which states that slicing always return a child node. Also, following this approach will add extra code complexity in the context of handling the different types of returned values from slicing. It will also force us to define a different behavior for each returned type from slicing resulting in substantial amount of code redundancy.  \\
+
+A clean solution is to encapsulate the defined key path containers in a special type of Hypertrie nodes. 
+Those nodes realize all the methods defined in the Hypertrie interface. 
+As a result, we treat slicing operations uniformally. 
+I call these wrappers \textbf{virtual nodes} to discriminate them from the actual Hypertrie nodes which I call \textbf{concrete nodes}. \\
+
+Back to the previous sub section \ref{ch:approach_node_structure}, I defined two types of key chain static containers. 
+Concretely, a static array of length 2 representing the key suffix of compressed edges in the root node. 
+A tagged pointer that bounds the key suffix (a single key part) of compressed edges in internal depth 2 nodes. 
+Hence, we now have two variants of nodes for each depth (except for the root node). Concrete nodes and virtual nodes. \\
+
+In the original Hypertrie implementation, slicing method gives enough information about the child node being returned from its execution as shown in listing \ref{lst:slicing_original_hypertrie}. 
+As we conceptually expanded the set of Hypertrie nodes to include virtual nodes, the pointer to a child node of a certain depth returned from a slicing must carry information about the nature of the node being concrete or virtual.
+
+\begin{lstlisting}[caption={Slicing method signituar defined for node where d = $depth$ in original Hypertrie},label={lst:slicing_original_hypertrie},language=C++]
+#include <array>
+
+template<int depth>
+class hypertrie_node {
+	....
+	template<typename key_part_type>
+	using SliceKey = std::array<std::optional<key_part_type>, depth>;
+	....
+	template<int slice_depth>
+	hypertrie_node<slice_count>* slice(SliceKey slice_key) {
+		....
+	}
+	....
+}
+\end{lstlisting} 
+
+To accomplish this, we again use tagged pointers. This time, the pointer holds only a memory address of type \texttt{void *}. However, the tag here is used to distinguish between the referenced node being concrete or virtual. Accordingly, we can cast the the pointer value to the appropriate type based on the tag value. 
+It becomes the responsibility of the slicing method to create and return that pointer properly. Listing \ref{lst:node_tagged_pointer} shows the structure of the tagged pointer I developed to reference different node types in our space-friendly Hypertrie. 
+
+\begin{lstlisting}[caption={Node pointer structure},label={lst:node_tagged_pointer},language=C++]
+
+template<typename VirtualNodePtr, typename ConcreteNodePtr, int alignedTo>
+class NodePointer {
+	private:
+	  	static const intptr_t tagMask = alignedTo - 1;
+	    static const intptr_t pointerMask = ~tagMask;
+	  
+	public:
+		static constexpr int VIRTUAL = 1;
+		
+		static constexpr int CONCRETE = 0;
+	
+	protected:
+		union {
+		  	void *asPointer;
+		  	uintptr_t asBits;
+		}
+      
+	public:
+        inline NodePointer(VirtualNodePtr ptr) {
+	        // Safer to clear the tag as we set a fresh tag in the setter method
+	        clearTag();
+	        asPointer = ptr;
+	        asBits |= VIRTUAL;
+        }
+        
+        inline void clearTag() {
+       		asBits &= pointerMask;
+        }
+        
+		inline NodePointer(ConcreteNodePtr ptr) {
+        	clearTag();
+           	asPointer = node;
+           	asBits |= CONCRETE;
+        }
+        
+        /**
+        * @param ptr it is already a tagged pointer
+        */
+        inline NodePointer(void *ptr) {
+	       	asPointer = ptr;
+        }
+        
+        inline NodePointer() {
+        	asPointer = nullptr;
+        }
+}
+\end{lstlisting} 
+
+\begin{lstlisting}[caption={Slicing method signituar defined for node where d = $depth$ in the space-friendly Hypertrie},label={lst:slicing_original_hypertrie},language=C++]
+#include <array>
+
+template<int depth, bool virtual>
+class hypertrie_node {
+  ...
+  template<typename key_part_type>
+  using SliceKey = std::array<std::optional<key_part_type>, depth>;
+  ....
+  template<int depth>
+  using NodePointer = 
+    TaggedPointer<hypertrie_node<depth, false>, hypertrie_node<depth, true>>;
+  ....
+  template<int slice_depth>
+  NodePointer<slice_depth> slice(SliceKey slice_key) {
+ 	....
+  }
+  ....
+}
+\end{lstlisting} 
+
+
+
+
+
 
 \section{Algorithms}
 The change in the internal nodes representations in the compressed version of Hypertrie leads to change in how we define its behavior. 
@@ -272,4 +372,22 @@ Best case is easy. all triples are stored in the root node???
 During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
 The compressed Hypertrie is \textbf{cache-conscious}. 
 That is the frequently accessed compressed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
+
+\begin{table}[tb]
+	\centering
+	\setlength{\tabcolsep}{1ex}
+	\begin{tabular}{lrrrrl}
+		\toprule
+		Dataset&\#T&\#S&\#P&\#O& {Type}\\
+		\midrule
+		SWDF & 372\;\;\,k & 32\;\;\,k & 185 & 96\;\;\,k  & real-world\\ % structuredness 0.027901741842416984
+		DBpedia & 681\;M & 40\;M & 63\;k & 178\;M & real-world \\ % structuredness
+		WatDiv & 1\;\,G & 52\;M & 186 & 92\;M & synthetic\\ % structuredness 0.005427051162802224
+		% DBpedia & 681'333'018 & 40'426'431 & 62658 & 178'269'555
+		% WatDiv & 1091468578 & 52120385 & 186 & 92'240'568
+		\bottomrule
+	\end{tabular}
+	\caption{Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\label{tab:datasets_stats}
+\end{table}
 

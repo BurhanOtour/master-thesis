@@ -1,2 +1,55 @@
-\chapter{Evaluation \& Benchmarking}
+\chapter{Evaluation}
 \label{ch:evaluation}
+
+How much data compression does the Hypertrie achieve due to applying the space reduction approach presented earlier? 
+Does the new data structure compromise the overall efficiency, more specifically, the query processing speed? 
+On the one side, this chapter describes the space-friendliness of Hypertrie by presenting the compression ratio achieved w.r.t. the original Hypertrie after the bulk loading with different RDF data sets is done for both Hypertrie variants.  
+On the other side, we have a look at how the space enhanced Tentris can still maintain its proven efficiency. For that, I ran a a series of benchmark experiments on real RDF data and queries. \\
+
+As this work's effort is mainly toward enhancing the Tentris system in the context of space cost, all the experiments consider only the original Tentris' Hypertrie as the reference for comparison opting out other triple store systems. The experimental setup is described in section \ref{sec:exper_setup}. In the succeeding section \ref{sec:results}, the results are presented.
+
+\section{Experimental Setup}
+\label{sec:exper_setup}
+
+\paragraph{Data Sets and Queries} In the evaluation phase, I used three RDF data sets. 
+
+\begin{table}[tb]
+	\centering
+	\setlength{\tabcolsep}{1ex}
+	\begin{tabular}{lrrrrl}
+		\toprule
+		Dataset&\#T&\#S&\#P&\#O& {Type}\\
+		\midrule
+		SWDF & 372\;\;\,k & 32\;\;\,k & 185 & 96\;\;\,k  & real-world\\ % structuredness 0.027901741842416984
+		DBpedia & 681\;M & 40\;M & 63\;k & 178\;M & real-world \\ % structuredness
+		WatDiv & 1\;\,G & 52\;M & 186 & 92\;M & synthetic\\ % structuredness 0.005427051162802224
+		% DBpedia & 681'333'018 & 40'426'431 & 62658 & 178'269'555
+		% WatDiv & 1091468578 & 52120385 & 186 & 92'240'568
+		\bottomrule
+	\end{tabular}
+	\caption{Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\label{tab:datasets_status}
+\end{table}
+
+\paragraph{Test Environment} I used the server machine "Geiser" provisioned and maintained by the data science research group at Paderborn university to run all the experiments. 
+The server machine has two Xeon E5-2683 v4 CPUs and 512 GB of RAM. 
+Geiser runs Ubuntu 18.04.4 LTS 64-bit on Linux Kernel 4.15.0-112-generic with Python 3.6.9 and OpenJDK Java 11.0.8 installed\footnote{The server specification may change in the future. However, by the time of the document submission date, the spec mentioned here holds.}.
+The benchmark tool and the Tentris triple stores (compressed/ non-compressed) were installed locally on a single server instance to ignore network latency. 
+Data sets held in N-Triples format (\verb|.nt| files) were uploaded to the server and stored on disk.
+
+\paragraph{Data Loading} 
+
+
+\paragraph{Benchmark Execution}
+For executing the benchmark, I used the generic SPARQL benchmark execution framework IGUANA \cite{conrads-2017-iguana-demo}. 
+IGUANA is a benchmark suite for executing benchmarks. 
+It takes a benchmark, namely a data set and a possible list of SPARQL queries/updates, as input. 
+Then it simulates a SPARQL user that pushes a series of queries repeatedly in a stress test scenario to a SPARQL endpoint where the next request is sent immediately after returning the last response. 
+IGUANA can execute both synthetic benchmarks and benchmarks based on real data.
+As part of its execution, the suite returns information on the different behavioral aspects of the respective triple store, such as query processing speed for each query and the query result's size. 
+The framework enables different benchmark execution options and fashions (measure performance of triple stores under updates, parallel user requests, etc ...). 
+As Tentris provides an HTTP-based SPARQL interface, I used the HTTP-based benchmark with one user as a benchmark setup. 
+The suite returned the average response time for each query, and the query result's size to consider later for comparison.  \\
+
+\section{Results}
+\label{sec:results}

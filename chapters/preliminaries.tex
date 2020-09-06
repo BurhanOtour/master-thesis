@@ -1,10 +1,13 @@
 \chapter{Preliminaries and Foundations}
 \label{ch:preliminaries}
 
-In this part of the work, I setup the foundations for my approach.
+This chapter is divided logically into two main parts. The first part presents the tooling and techniques I utilized to implement aspects of my space-reduction solution. I take into consideration the pointer tagging technique (Sec. \ref{sec:preliminaries:tentris}) and the utilization of template-meta programming in modern C++ (Sec. \ref{sec:preliminaries:cpp}). In addition, the first part introduces common notations and terminologies that I  use through out the work (Sec. \ref{sec:notation}). \\ 
 
-%\input{chapters/preliminaries/cppmetaprogramming}
-\input{chapters/preliminaries/hashtable}
+In the second part, I present the Tentris triple store system with a deep focus on its indexing data structure Hypertrie in Sec. \ref{sec:preliminaries:tentris}. 
+Hypertrie represents the subject under focus upon which the space utilization enhancement is applied.
+
+
+\input{chapters/preliminaries/notation}
+\input{chapters/preliminaries/cppmetaprogramming}
 \input{chapters/preliminaries/pointertagging}
-%\input{chapters/preliminaries/triebaseddatastructure}
-%\input{chapters/preliminaries/tentris}
+\input{chapters/preliminaries/tentris}
