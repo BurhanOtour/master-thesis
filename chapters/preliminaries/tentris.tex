@@ -1,5 +1,23 @@
-\section{Tentris Triple Store}
+\section{Triple Stores and Tentris }
 \label{sec:preliminaries:tentris}
+
+\setlength{\parindent}{4ex}Triple stores are special kind of data management systems designed to store RDF triple data. An RDF triple is composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}. Each of these elements is called an \textit{RDF Term}  (RT). 
+In turn, each RDF term value can either be \textit{an Internationalized Resource Identifier} (IRI), \textit{a blank node}, or \textit{a literal} \cite{RDF11}. 
+For example, \verb|<http://example.com/Bob http://example.com/name "Bob">| is an RDF triple instance. \\
+
+Generally, triple stores provide a standard interface to enable performing queries and other semantic operations on the stored RDF triples through a query language such as SPARQL \cite{Hitzler}. 
+Triple stores are considered central elements in the “Storage and Querying” phase of the linked data life cycle \cite{LOD}.  \\
+
+As there is no standard design guideline for triple stores, different implementations of triple stores co-exist. Each subgroup of these implementations utilizes a category of underlying data structures as well as corresponding algorithms that govern the behaviour. 
+In production, triple stores are used to store up to billions of RDF triples. 
+To that extent, quality factors like efficiency and scalability are considered first-class citizens during the construction of triple stores. 
+And the selection of internal data structures and the behaviour definitions greatly influence the overall system efficiency. \\
+
+Fuseki, Blazegraph, Virtuoso and RDF-3X are popular implementations of Triple stores. 
+One of the common design characteristics is that they all utilize B+ trees for storing the indices. 
+Other categories of triple stores use 3D Boolean tensors to store and process RDF data. In such systems, each tensor dimension is mapped to a triple data aspect, i.e. subject, predicate or object. Examples of tensor-based triple stores include systems like TensorRDF and BitMat. \\
+
+Mention the \verb|.nt| file.
 
 \subsection{Mapping RDF to Tensor}
 

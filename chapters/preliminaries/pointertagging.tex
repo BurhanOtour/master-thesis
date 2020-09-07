@@ -4,7 +4,7 @@
 Pointer Tagging is a low-level programming technique that uses the spare low bits in a pointer to encode additional information. Using the Pointer tagging technique, pointer value (initially a memory address before tagging) can hold extra information about the point-to heap object or can be used as a meta-data to further describe the usage of the pointer data. Pointer tagging is mainly enabled because of the way heap objects are situated and accessed on modern computer architectures.
 
 \subsection{Data Structure Alignment}
-\label{sec:data_alignment}
+\label{sec:preliminaries:data_alignment}
 Data alignment (also referred to as data structure padding) is a way in which heap objects are arranged and accessed by the CPU. CPUs in modern computer architecture (say 64-bit architecture) read data from and write data to memory more efficiently when data is aligned.  \\
 
 On an abstract level, computer memory can be seen as an array of words or bytes, each with its own address. Unlike bytes, the term word has ambiguate meaning. In the context of this work, we are targeting the generic term in the context of CPU architecture. That is, a "processor word" refers to the size of a processor register or memory address register. The term word also refers to the size of CPU instruction, or the size of a pointer depending on the exact CPU architecture. For example, in a 64-bit architecture, the word size (also pointer size) is 64 bits = 8 bytes.\todo{Figure need to be added} \\
@@ -39,3 +39,5 @@ Pointer tagging can be applied in many use cases. In my work, there are a couple
 
 \paragraph{Type Tagged Pointer} \todo{Keep it for the time being}
 Figure
+
+\clearpage
