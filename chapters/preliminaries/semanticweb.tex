@@ -10,7 +10,7 @@ The Resource Description Framework (RDF), a standard for representing data in th
 
 \subsection{Resource Description Framework}
 
-The Resource Description Framework (RDF) is part of the W3C standard to define the web of data \cite{rdfonline}. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{Pasd}\todo{cite}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{asd}.\todo{cite} \\
+The Resource Description Framework (RDF) is part of the W3C standard to define the web of data \cite{rdfonline}. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{Pasd}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{asd}. \\
 
 \begin{definition}[RDF Terms]
 Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be $B$ the set of
@@ -28,35 +28,57 @@ A set of of RDF Triples is called RDF graph.
 
 \paragraph{Example 2.1}
 An example of an RDF graph is given in Table \ref{tab:rdf_graph_example}. 
-The data describes a unicorn named “Ralf ” and a lama named “Sara”. Additionally, it states that unicorns eat rainbows and lamas eat plants. \\
+The data in the graph presents a list of pioneers along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
 
-We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{asd} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. 
+We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{asd} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. \\
+
 Listing \ref{lst:sparqlexample} shows a simple example of a SPARQL query
 against the RDF graph in table \ref{tab:rdf_graph_example}. \\
-
-
 
 \begin{table}[h]
 	\centering
 	\begin{tabular}{lll}
 		\textbf{subject} & \textbf{predicate} & \textbf{object} \\ \hline
-		ex:ralf          &        foaf:name            &          "Ralf"       \\
-		ex:ralf          &        rdf:type           &       dbr:Unicorn          \\
-		ex:sara			&          foaf:name          &          "Sara"       \\
-		ex:sara         &            rdf:type        &           dbr:Llama   \\  
-		dbr:Unicorn         &           ex:eats        &           dbr:Rainbow   \\  
-		dbr:Llama      &            ex:eats      &          dbr:Plant  \\
+		ex:PresidentOfUS          &        rdf:type            &        madsrdf:Occupation       \\
+		ex:Professor          &        rdf:type            &        madsrdf:Occupation       \\
+		ex:PoliticalParty			&          rdf:type          &          v:Organization     \\
+		ex:RepublicanParty			&          rdf:type          &          ex:PoliticalParty     \\
+		ex:DemocraticParty			&          rdf:type          &          ex:PoliticalParty     \\
+		ex:AndrewNg          &        madsrdf:occupation           &      ex:Professor         \\
+		ex:BarakObama          &        madsrdf:occupation           &       ex:PresidentOfUS         \\
+		ex:GeraldFord          &        madsrdf:occupation           &       ex:PresidentOfUS         \\
+		ex:BarakObama          &        ex:party           &       ex:DemocraticParty	         \\
+		ex:GeraldFord          &        ex:party           &       ex:RepublicanParty         \\
+		ex:BarakObama          &        foaf:spouse           &       ex:DemocraticParty	         \\
+		ex:GeraldFord          &        foaf:spouse           &       ex:MichelleObama         \\
+		ex:AndrewNg          &        foaf:spouse           &       ex:CarolEReiley         \\
 	\end{tabular}
 	\caption{An RDF graph about a lama and a unicorn, what are their names and what they eat.}
 	\label{tab:rdf_graph_example}
 \end{table}
 
-\begin{lstlisting}[label={lst:sparqlexample},caption={An SPARQL query that returns what food Ralph eats.}]
-SELECT ?food
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ll}
+		\textbf{abbr.} & \textbf{IRI}  \\ \hline
+		rdf:         &        http://www.w3.org/1999/02/22-rdf-syntax-ns       \\
+		madsrdf:          &        	http://www.loc.gov/mads/rdf/v1                 \\
+		ex:			&          https://www.example.com            \\
+		v:			&          https://www.w3.org/TR/vcard-rdf/          \\
+		foaf:			&         http://xmlns.com/foaf/0.1/           \\
+	\end{tabular}
+	\caption{The list of abbreviations used in table \ref{tab:rdf_graph_example}.}
+	\label{tab:rdf_graph_abbr}
+\end{table}
+
+
+\begin{lstlisting}[label={lst:sparqlexample},caption={A SPARQL query that returns the spouse of each US president whose party is the democratic.}]
+SELECT ?spouse
 WHERE { 
-	?being foaf:name "Ralf" .
-	?being rdf:type ?type .
-	?type ex:eats ?food }
+	?president madsrdf:occupation ex:PresidentOfUS .
+	?president ex:party ex:DemocraticParty .
+	?president foaf:spouse ?spouse }
 \end{lstlisting}
  
 \clearpage
