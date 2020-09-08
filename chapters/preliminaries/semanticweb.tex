@@ -1,0 +1,62 @@
+\section{Semantic Web}
+\label{sec:preliminaries:semanticweb}
+
+Today World Wide Web (WWW) holds a tremendous amount of different types of data (videos, images, text, geolocation data, books, publications, etc.). 
+Such data comes from different sources (web applications, warehouse systems, GPS devices, smartphones, ATMs, etc.).
+However, such data are still processed passively by computer system as there is no way to understand its meaning or context.
+The term \textbf{Semantic Web} was coined by Tim Berners-Lee for a \textit{Web of Data} (or \textit{Data Web}) \cite{LeeWeavingTheWeb} that can be processed by machines. 
+The key technologies of Semantic Web are published by the World Wide Web Consortium (W3C). 
+The Resource Description Framework (RDF), a standard for representing data in the Semantic Web, and SPARQL, a query language for RDF data, are introduced in this section.
+
+\subsection{Resource Description Framework}
+
+The Resource Description Framework (RDF) is part of the W3C standard to define the web of data \cite{rdfonline}. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{Pasd}\todo{cite}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{asd}.\todo{cite} \\
+
+\begin{definition}[RDF Terms]
+Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be $B$ the set of
+\textit{blank nodes}. Further $I$, $L$ and $B$ are finite and pair-wise disjoint. Then the set $RT = I \cup L \cup B$ is called the set of RDF terms. 
+\end{definition}
+
+\subsubsection{RDF Triple, RDF Graph} On an abstract level, an RDF triple can be seen as a statement that describes the relationship between two resources. An RDF triple can also serve to describe the property of a resource. RDF triple is represented by a sentence composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}.
+The subject is a RDF resource. The subject has a property defined by the predicate and a value for that property set by the object.
+RDF restricts which RDF terms can be used for subject, predicate and object:
+
+\begin{definition}[RDF Triple, RDF Graph]
+An RDF Triple is a triple $(s, p, o) \in ( I \cup B ) \times I \times RT$ where $s$ is called subject, $p$ is called predicate and $o$ is called object. \\
+A set of of RDF Triples is called RDF graph.
+\end{definition}
+
+\paragraph{Example 2.1}
+An example of an RDF graph is given in Table \ref{tab:rdf_graph_example}. 
+The data describes a unicorn named “Ralf ” and a lama named “Sara”. Additionally, it states that unicorns eat rainbows and lamas eat plants. \\
+
+We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{asd} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. 
+Listing \ref{lst:sparqlexample} shows a simple example of a SPARQL query
+against the RDF graph in table \ref{tab:rdf_graph_example}. \\
+
+
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{lll}
+		\textbf{subject} & \textbf{predicate} & \textbf{object} \\ \hline
+		ex:ralf          &        foaf:name            &          "Ralf"       \\
+		ex:ralf          &        rdf:type           &       dbr:Unicorn          \\
+		ex:sara			&          foaf:name          &          "Sara"       \\
+		ex:sara         &            rdf:type        &           dbr:Llama   \\  
+		dbr:Unicorn         &           ex:eats        &           dbr:Rainbow   \\  
+		dbr:Llama      &            ex:eats      &          dbr:Plant  \\
+	\end{tabular}
+	\caption{An RDF graph about a lama and a unicorn, what are their names and what they eat.}
+	\label{tab:rdf_graph_example}
+\end{table}
+
+\begin{lstlisting}[label={lst:sparqlexample},caption={An SPARQL query that returns what food Ralph eats.}]
+SELECT ?food
+WHERE { 
+	?being foaf:name "Ralf" .
+	?being rdf:type ?type .
+	?type ex:eats ?food }
+\end{lstlisting}
+ 
+\clearpage

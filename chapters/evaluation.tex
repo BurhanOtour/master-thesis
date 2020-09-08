@@ -63,7 +63,8 @@ Underbeneath each subdirectory \verb|/proc/[|\textit{pid}\verb|]|, there are a s
 After a single bulk load experiment is finished, Tentris access the corresponding status file; i.e. \verb|/proc/slef/status| where the magic symbolic link \verb|self| is automatically evaluated to Tentris' process ID. The field \verb|VmRSS| inside \verb|Status| file provide the current memory utilization of the resident Tentris process including the sizes of resident anonymous memory, resident file mappings and resident shared memory. 
 
 \subsubsection{Calculating Load Time}
-A simple tic-toc approach is followed to calculate the load speed of RDF graph into Tentris. More specifically, two start and end time flags are setup immediately before and after the actual loading of keys. The difference between the two checkpoints is then calculated to capture the load speed. 
+A simple tic-toc approach is adopted to calculate the load speed of RDF graphs into Tentris. More specifically, two start and end time flags are setup immediately before and after the actual loading of keys. The difference between the time checkpoints is then calculated to capture the load speed.  \\
+
 The time checkpoints calculation utilized \verb|steady_clock| instead of \verb|system_clock|.
 As \verb|system_clock| talks periodically to machine clock to correct itself, it might make minor timing mistakes. As \verb|steady_clock| is independent from the system clock, thus providing more reliable timing insights. 
  
@@ -83,17 +84,17 @@ The suite returned the average response time for each query, and the query resul
 
 \clearpage
 
-\begin{figure}[h]
-	\label{fig:benchmarks}
-	\centering
-	\subfigure[SWDF]{%
-		\includegraphics[width=\textwidth]{figures/chapter5/SWDFBenchmarktriangle}%
-	}
+%\begin{figure}[h]
+%	\label{fig:benchmarks}
+%	\centering
+%	\subfigure[SWDF]{%
+	%	\includegraphics[width=\textwidth]{figures/chapter5/SWDFBenchmarktriangle}%
+	%}
 	
-	\subfigure[DBpedia]{%
-		\includegraphics[width=\textwidth]{figures/chapter5/DBpediaBenchmarktriangle}%
-	}
+%	\subfigure[DBpedia]{%
+%		\includegraphics[width=\textwidth]{figures/chapter5/DBpediaBenchmarktriangle}%
+%	}
 	
-	\caption{Average Queries per Second (avg QpS) by size of the query result considering the two variants of Hypertrie implementations (compressed, non-compressed). Figure 5.1a shows the performance with the SWDF dataset, and figure 5.1b shows the performance with the DBpedia dataset.}
-\end{figure}
+	%\caption{Average Queries per Second (avg QpS) by size of the query result considering the two variants of Hypertrie %implementations (compressed, non-compressed). Figure 5.1a shows the performance with the SWDF dataset, and %figure 5.1b shows the performance with the DBpedia dataset.}
+%\end{figure}
 \clearpage
