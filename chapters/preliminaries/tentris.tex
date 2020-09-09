@@ -1,24 +1,126 @@
-\section{Triple Stores and Tentris }
+\section{Tentris}
 \label{sec:preliminaries:tentris}
 
-\setlength{\parindent}{4ex}Triple stores are special kind of data management systems designed to store RDF triple data. An RDF triple is composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}. Each of these elements is called an \textit{RDF Term}  (RT). 
-In turn, each RDF term value can either be \textit{an Internationalized Resource Identifier} (IRI), \textit{a blank node}, or \textit{a literal} \cite{RDF11}. 
-For example, \verb|<http://example.com/Bob http://example.com/name "Bob">| is an RDF triple instance. \\
-
-Generally, triple stores provide a standard interface to enable performing queries and other semantic operations on the stored RDF triples through a query language such as SPARQL \cite{Hitzler}. 
-Triple stores are considered central elements in the “Storage and Querying” phase of the linked data life cycle \cite{LOD}.  \\
-
-As there is no standard design guideline for triple stores, different implementations of triple stores co-exist. Each subgroup of these implementations utilizes a category of underlying data structures as well as corresponding algorithms that govern the behaviour. 
+There is no standard design guideline for triple stores. Hence different implementations of triple stores co-exist. Each subgroup of these implementations utilizes a category of underlying data structures as well as corresponding algorithms that govern the behavior. 
 In production, triple stores are used to store up to billions of RDF triples. 
-To that extent, quality factors like efficiency and scalability are considered first-class citizens during the construction of triple stores. 
-And the selection of internal data structures and the behaviour definitions greatly influence the overall system efficiency. \\
+To that extent, quality factors like efficiency and scalability are considered first-class citizens during triple stores' construction. 
+And the selection of internal data structures and the behavior definitions greatly influence the overall system efficiency. \\
 
-Fuseki, Blazegraph, Virtuoso and RDF-3X are popular implementations of Triple stores. 
-One of the common design characteristics is that they all utilize B+ trees for storing the indices. 
-Other categories of triple stores use 3D Boolean tensors to store and process RDF data. In such systems, each tensor dimension is mapped to a triple data aspect, i.e. subject, predicate or object. Examples of tensor-based triple stores include systems like TensorRDF and BitMat. \\
+Fuseki, Blazegraph, Virtuoso, and RDF-3X are popular implementations of Triple stores. 
+One of the key design characteristics those triple stores have in common is that they all utilize B+ trees to store the indices. 
+Other categories of triple stores use 3D Boolean tensors to store and process RDF data. In such systems, each tensor dimension is mapped to a triple data aspect, i.e., subject, predicate, or object. Examples of tensor-based triple stores include systems like TensorRDF and BitMat. In the following, a novel tensor-based RDF triple store is presented. \\
 
-Mention the \verb|.nt| file.
+Tentris is a triple store variant designed by the data science research group at Paderborn university\cite{tentris2020}. 
+Tentris is an in-memory storage solution that represents RDF knowledge graphs as sparse order-3 tensors using a novel data structure, called Hypertire. 
+It then uses tensor algebra to carry out SPARQL queries by mapping SPARQL operations to Einstein summation\cite{einstein}. 
+At the time of this writing, Tentris' SPARQL engine realizes \textit{SPARQL-BGB}  (a subset of the SPARQL-algebra). 
+Consequently, the engine can execute SPARQL queries containing the following keywords: \verb|@prefix|, \verb|SELECT|, \verb|WHERE|, and \verb|DISTINCT|\cite{foundationofthesemanticweb}. \myworries{mention that you omit talking about the query aspects: Einstein summation, etc} \\
 
-\subsection{Mapping RDF to Tensor}
+Since my work represents a further contribution to the project Tentris, I dedicate this section to deliver a preface for the relevant aspects. In subsection \ref{sec:tensor_algebra}, I specify what tensors are. A way of representing RDF graphs in tensors is showed in subsection \ref{sec:rdf_tensor}. Hypertrie data structure is visited in subsection \ref{sec:hypertrie}.
 
-\subsection{Hypertrie}
+\subsection{Tensor Algebra}
+\label{sec:tensor_algebra}
+In mathematics, the term Tensor holds a representation-independent meaning. According to \cite{kj}, Tensors are “objects with many indices that transform in a specific way under a change of
+Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, for tensors to be applied in a practical context, a more concrete definition should be selected. Among other choices, multi-dimensional arrays are widely used as a representation for tensors. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.Tensor was defined formally in \cite{tentris2020} as the following:
+
+\begin{definition}[Tensor]
+A mapping\\
+\centerline{$T: \textbf{K} \to V$}\\
+from a multi-index $\textbf{K}$ to a codomain $V$ is called tensor. $\textbf{K}$ is called \textit{key basis} of dimension $n \in \mathbb{N}$ with \\
+\centerline{ $\textbf{K} = K_0 \times K_1 \times ... \times K_{n-1}, K_i \subset \mathbb{N}$ } \\
+The tuple $\textbf{k} \in \textbf{K}$ is called \textit{key}, $K_i$ is called a \textit{key part basis} and $k \in K_i$ is called \textit{key part}.\\
+The dimension of the key basis is also called dimension of the tensor and is denoted by ndim($T$)=$n$. Further, nnz($T$) = $|\{\textbf{k} \in \textbf{K} | T(\textbf{k})  \neq 0\}|$ denotes the \textit{ number of non-zero entries}.
+\end{definition} 
+
+To resolve a value of a tensor, we use the array subscript notation $T[k_0, .. , k_{n-1}]$. Moreover, the symbol $V^{\textbf{K}}$ denotes the set of all mappings $T: \textbf{K} \to V$. My work exclusively consider tensors $T$ with $\mathbb{B}$ or $\mathbb{N}$ as codomain and only use multi-indexes $K_1 = ... = K_n \subset \mathbb{N}$. An $n$-dimensional tensor is also called \textit{order-$n$} tensor.
+\begin{example}
+\label{tensors_examples}
+ In the following, some examples to illustrate the Definition 2.3:
+
+\begin{enumerate}
+	\item A tensor $S \in \mathbb{Z}^{\emptyset}$ is called a \textit{scalar}.\\
+	\centerline{$S = 1$}
+	So $S[\emptyset] = S[]$ is 1.
+	\item A tensor $X \in \mathbb{Z}^{\mathbb{N}_3}$ is called a \textit{vector}.\\
+	\centerline{$X =\left[ \begin{array}{c}
+		4 \\ 7 \\ 15\\
+		\end{array}\right]$}\\
+	where $X[2]$ is 15. 
+	\item Now, we take a three dimensional tensor $Y \in \mathbb{Z}^{\mathbb{N}_2 \times \mathbb{N}_2 \times \mathbb{N}_2}$. It can be visualized by a vector for the first key part which, in turn, has matrices each with dimensions corresponding to second and third key parts. As an example:\\
+	\centerline{$Y = \left[ 
+		\begin{array}{c}
+		\left[\begin{array}{cc}  1 & 2 \\ 3 & 5 \\\end{array} \right]\\ 
+		\left[\begin{array}{cc} 7 & 11 \\ 13 & 15 \\\end{array} \right]\\ 
+		\end{array}
+		\right]$}\\
+	Such that, $Y[1, 0, 1]$ is 11.
+\end{enumerate}
+\end{example}
+
+\subsubsection{Tensor Operations}
+\label{sec:tensor_operations}
+This section highlights the core operations on tensors. In particular, I describe what tensor slicing and Einstein summations are. In the following, I skip the formal definitions of the operations, instead I present them informally with examples.
+
+
+\paragraph{Slices} Slicing is a useful operation to retrieve a well-defined portion of a tensor $T \in V^{K}$ in the form of a lower order tensor. Slicing is done by using a \textit{slice key} $\textbf{s} \in S = (K_0 \cup \{:\}) \times .... \times ( K_{n-1}\cup \{:\})$, and denoted like as we are retrieving a value but with one or more dimensions not bound, e.g. $T[:, x, :]$ (or $T[<:, x, :>]$). 
+When applying the slice key $\textbf{s}$ to a tensor $T$, the unbounded dimensions in the slice key (the ones that are marked with $:$) are kept. 
+A slice key part $s_i \neq :$ removes
+all entries with other key parts at position $i$ and removes $K_i$ from the resultant tensor domain. e.g., $T[:, 2, :]$ or $T[<:, 2, :>]$.
+
+\begin{example}
+	Back to the third item in Example \ref{tensors_examples}, slicing tensor $Y$ by slice keys $s_1 = <:, 1, :>$ results in an order-2 tensor $Z_1 = Y[:, 1, :]$, and with a slice key $s_2 = <0, 1, :>$ results in an order-1 tensor $Z_2 = Y[0, 1, :]$:\\
+	
+	 \centerline{$Z_1 = \left[ \begin{array}{cc} 1 & 2 \\ 7 & 11 \\ \end{array}\right]$}  
+	 
+	 
+	 \centerline{$Z_2 = \left[ \begin{array}{c} 1 \\ 2 \\ \end{array}\right]$} 
+\end{example}
+
+Worth to mention that, slicing operation is associative, meaning that applying a sequence of slicing operations with different grouping to tensor $Y$ brings the same results:
+
+\centerline{$Y[1, 0, :] = (Y[1, :, :])[0, :] = Y([:, 0, :])[1, :] = Z_2$}
+
+\paragraph{Einstein Summation}
+\label{einstein_summation}
+\myworries{Need to be added}
+
+\subsection{Storing RDF Graphs in Tensors}
+\label{sec:rdf_tensor}
+Based on \cite{tentris2020}, let $g$ be an RDF graph with IRIs ($I$), blank nodes ($B$) and literals ($L$) being finite sets, and thus the set of RDF terms $RT$ is also finite (Sec. \ref{sec:rdf}). We define a bijective function $id_{RT}: RT \to N_n$ where $|RT|=n$. We call the function \textit{index of resources}. $id_{RT}$ maps each RDF term to a unique identifier. Similarly, we define the \textit{resources by indices} function as $res_{RT} = id_{RT}^{-1}$. 
+We omit the use of the subscript $RT$ with the functions' names $id_{RT}$ and $res_{RT}$ when it is clear from the context. \\
+
+Every triple $<s, p, o> \in g$ is also in ($RT \times RT \times RT$). For that, we can define an order-3 tensor $T \in \mathbb{B}^{N_n \times N_n \times N_n}$. We store the triple $<s, p, o>$ in $T$ by setting $T[id(s), id(p), id(o)] = 1$ and all other entries in $T$ are set to 0. We call $T$ the tensor representation of the RDF graph g and denoted by $T_g$. In other words: \\
+\centerline{$T[i_s, i_p, i_o] = 1 \iff <res(i_s), res(i_p), res(i_o)> \in g$}
+
+\begin{example}
+Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_7 \times N_7 \times N_7}$. 
+\end{example}
+
+Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolean tensor}. Subject, predicate, and object are associated with one dimension each. In practice, a dimension range  ($|RT| =n$) of an RDF tensor $T_g$ fits much more than the bounded resources' IDs in $g$ for that dimension. In \cite{tentris2020}, however, it is proven that by choosing equal key part basis for enable efficient dimension matching using Einstein notation. As $T_g$ can store a super set of RDF triple in $g$, we call $T_g$ \textit{a sparse tensor}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{lll}
+		\textbf{subject} & \textbf{predicate} & \textbf{object} \\ \hline
+		:e1 (1) & foaf:knows (2) & :e2 (3) \\
+		:e1 (1) & foaf:knows (2) & :e3 (4) \\
+		:e2 (3) & foaf:knows (2) & :e3 (4) \\
+		:e2 (3) & foaf:knows (2) & :e4 (5)  \\
+		:e3 (4) & foaf:knows (2) & :e2 (3) \\ 
+		:e3 (4) & foaf:knows (2) & :e4 (5) \\
+		:e2 (3) & rdf:type (6) & dbr:Unicorn (7) \\
+		:e4 (5) & rdf:type (6) & dbr:Unicorn (7) \\
+	\end{tabular}
+	\caption{An RDF graph example. Resources are printed alogn with their corresponding IDs (enclosed in brackets).}. 
+	\label{tab:rdf_tensor}
+\end{table}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{figures/chapter2/3Dcoord-cut}
+	\caption{A 3D plot of an order-3 RDF tensor representing the RDF graph in table \ref{tab:rdf_tensor}.}
+	\label{fig:rdf_tensor}
+\end{figure}
+
+\subsection{Tentris and Hypertrie}
+\label{sec:hypertrie}

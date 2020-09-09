@@ -2,8 +2,9 @@
 % Some commands for setting up theorem environments as provided by package 
 % amsthm --- language sensitive
 %%%%%%%%%
-\theoremstyle{plain}
+\theoremstyle{definition}
 \newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
 \newtheorem{lemma}[definition]{Lemma}
 \ifgerman
 	\newtheorem{theorem}[definition]{Satz}
@@ -12,9 +13,8 @@
 \else
 	\newtheorem{theorem}[definition]{Theorem}
 	\newtheorem{corollary}[definition]{Corollary}
-	\newtheorem{example}[definition]{Example}
+%	\newtheorem{example}[definition]{Example}
 \fi
-
 
 
 %%%%%%%%%

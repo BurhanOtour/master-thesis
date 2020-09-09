@@ -9,7 +9,7 @@ The key technologies of Semantic Web are published by the World Wide Web Consort
 The Resource Description Framework (RDF), a standard for representing data in the Semantic Web, and SPARQL, a query language for RDF data, are introduced in this section.
 
 \subsection{Resource Description Framework}
-
+\label{sec:rdf}
 The Resource Description Framework (RDF) is part of the W3C standard to define the web of data \cite{rdfonline}. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{Pasd}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{asd}. \\
 
 \begin{definition}[RDF Terms]
@@ -17,7 +17,9 @@ Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be 
 \textit{blank nodes}. Further $I$, $L$ and $B$ are finite and pair-wise disjoint. Then the set $RT = I \cup L \cup B$ is called the set of RDF terms. 
 \end{definition}
 
-\subsubsection{RDF Triple, RDF Graph} On an abstract level, an RDF triple can be seen as a statement that describes the relationship between two resources. An RDF triple can also serve to describe the property of a resource. RDF triple is represented by a sentence composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}.
+\subsubsection{RDF Triple, RDF Graph}
+\label{sec:rdf_triples}
+On an abstract level, an RDF triple can be seen as a statement that describes the relationship between two resources. An RDF triple can also serve to describe the property of a resource. RDF triple is represented by a sentence composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}.
 The subject is a RDF resource. The subject has a property defined by the predicate and a value for that property set by the object.
 RDF restricts which RDF terms can be used for subject, predicate and object:
 
@@ -26,9 +28,10 @@ An RDF Triple is a triple $(s, p, o) \in ( I \cup B ) \times I \times RT$ where 
 A set of of RDF Triples is called RDF graph.
 \end{definition}
 
-\paragraph{Example 2.1}
-An example of an RDF graph is given in Table \ref{tab:rdf_graph_example}. 
-The data in the graph presents a list of pioneers along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
+\begin{example}
+	An example of an RDF graph is given in Table \ref{tab:rdf_graph_example}. 
+	The data in the graph presents a list of pioneers along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
+\end{example}
 
 We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{asd} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. \\
 
@@ -80,5 +83,13 @@ WHERE {
 	?president ex:party ex:DemocraticParty .
 	?president foaf:spouse ?spouse }
 \end{lstlisting}
+ 
+ \subsubsection{Triple Stores}
+ \textit{Triple Stores} are a special kind of data management systems designed to store RDF triple data. 
+ It can store one or more RDF graphs. 
+ Generally, triple stores provide a standard interface to enable performing queries and other semantic operations on the stored RDF triples using a query language such as SPARQL (Sec. \ref{sec:rdf_triples}).
+ Triple stores usually expose HTTP-based SPARQL endpoints for querying enablement. 
+ A triple store client can send a SPARQL query embedded in an HTTP request to the endpoint.
+ The store evaluates the query against the RDF data it holds and return the results to the client in the body of an HTTP response in a format conforms to the system configuration.
  
 \clearpage
