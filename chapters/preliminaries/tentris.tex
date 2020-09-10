@@ -21,7 +21,8 @@ Since my work represents a further contribution to the project Tentris, I dedica
 \subsection{Tensor Algebra}
 \label{sec:tensor_algebra}
 In mathematics, the term Tensor holds a representation-independent meaning. According to \cite{kj}, Tensors are “objects with many indices that transform in a specific way under a change of
-Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, for tensors to be applied in a practical context, a more concrete definition should be selected. Among other choices, multi-dimensional arrays are widely used as a representation for tensors. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.Tensor was defined formally in \cite{tentris2020} as the following:
+Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, for tensors to be applied in a practical context, a more concrete definition should be selected. Among other choices, multi-dimensional arrays are widely used as a representation of tensors. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.
+Tensor was defined formally in \cite{tentris2020} as the following:
 
 \begin{definition}[Tensor]
 A mapping\\
@@ -82,7 +83,12 @@ Worth to mention that, slicing operation is associative, meaning that applying a
 
 \paragraph{Einstein Summation}
 \label{einstein_summation}
-\myworries{Need to be added}
+Available in many software packages.
+Allow mutiple operation on different tensors (including vectors, matrices)
+Einstein Notation Example:
+Print Three arrays
+
+Calculate the summation result (\myworries{from the paper})
 
 \subsection{Storing RDF Graphs in Tensors}
 \label{sec:rdf_tensor}
@@ -93,6 +99,7 @@ Every triple $<s, p, o> \in g$ is also in ($RT \times RT \times RT$). For that, 
 \centerline{$T[i_s, i_p, i_o] = 1 \iff <res(i_s), res(i_p), res(i_o)> \in g$}
 
 \begin{example}
+	\label{ex:rdf_tensor}
 Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_7 \times N_7 \times N_7}$. 
 \end{example}
 
@@ -122,5 +129,32 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 	\label{fig:rdf_tensor}
 \end{figure}
 
+\clearpage
+
 \subsection{Tentris and Hypertrie}
 \label{sec:hypertrie}
+
+\subsubsection{Trie}
+A \textit{Trie} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the set of the ASCII codes; sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
+
+A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$|. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As array lookup is computationally constant, thus looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to represent edges is to maintain a hash table $HT$  Node whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
+
+A \textit{fixed-depth trie} $C$ is a trie that holds sequences of the same length $n$, termed as $keys$. In that case, a sequence $l = <l_0, … , l_m> \in \mathbb{A}^m$ of length $m <= n$ forms a \textit{key prefix}. $C[l]$ is defined as the node that is reached from the root node $r$ by walking along the nodes with edge labels equal to the entries of $l$. Hence, $C[l]$ could be undefined if no appropriate path exists. \\
+
+We can represent a tensor $T_g \in \mathbb{B}^{\mathbb{N}_n \times \mathbb{N}_n \times \mathbb{N}_n}$ that is used to store an RDF graph $g$ with |$RT$|$=n$ (Sec. \ref{sec:rdf_tensor}) using a fixed-depth trie $C_{T_g}$ of depth $d = $ ndim($T_g$) $=3$ with the alphabet $\mathbb{N}_n$. We call $C_{T_g}$ a \textit{a trie tensor or trie representation of $T_g$}, if: \\
+\centerline{$\forall \textbf{k} \in \mathbb{N}_n \times \mathbb{N}_n \times \mathbb{N}_n, v \neq 0: T_g[k] = v \iff C_{T_g}[k] = v$}\\
+
+Resolving a tensor trie of depth $d$ by key prefix $l = <k_0, ..., k_m>$ where $m <d$ is equavalent to slicing an RDF tensor using a slice key $s = <k_0, ..., k_m, e_{m+1}, ...,e_d>$ with $e_i$ = $\textbf{:}$. An example of a trie tensor is showed in figure \ref{fig:rdf_trie}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{figures/chapter2/trie4}
+	\caption{Trie representation of the tensor $T_g$ depicted in the Example\ref{ex:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+	\label{fig:rdf_trie}
+\end{figure}
+\clearpage
+
+
+\subsubsection{Hypertrie}
+
+A main requirement in Tentris is for the RDF tensor to be sliced by any combination of slicing positions.
