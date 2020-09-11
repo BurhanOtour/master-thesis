@@ -133,28 +133,62 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 
 \subsection{Tentris and Hypertrie}
 \label{sec:hypertrie}
+Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structure, I first clarify how tensors storing RDF graphs can be represented as tries. Then, I show why this is not engouh for our use case. \myworries{rephrase the concept}.
 
 \subsubsection{Trie}
-A \textit{Trie} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the set of the ASCII codes; sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
+A \textit{Trie} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the ASCII codes set. Sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
 
-A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$|. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As array lookup is computationally constant, thus looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to represent edges is to maintain a hash table $HT$  Node whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
+A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$|. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to represent edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
 
-A \textit{fixed-depth trie} $C$ is a trie that holds sequences of the same length $n$, termed as $keys$. In that case, a sequence $l = <l_0, … , l_m> \in \mathbb{A}^m$ of length $m <= n$ forms a \textit{key prefix}. $C[l]$ is defined as the node that is reached from the root node $r$ by walking along the nodes with edge labels equal to the entries of $l$. Hence, $C[l]$ could be undefined if no appropriate path exists. \\
+A \textit{fixed-depth trie} $C$ is a trie that holds sequences of the same length $n$, termed as $keys$. In that case, a sequence $l = <l_0, … , l_m> \in \mathbb{A}^m$ of length $m <= n$ forms a \textit{key prefix}. $C[l]$ is defined as the node that is reached from the root node $r$ by walking along the nodes with edge labels equal to the entries of $l$. Hence, $C[l]$ could be undefined if no appropriate path exists. Moreover, \\
 
 We can represent a tensor $T_g \in \mathbb{B}^{\mathbb{N}_n \times \mathbb{N}_n \times \mathbb{N}_n}$ that is used to store an RDF graph $g$ with |$RT$|$=n$ (Sec. \ref{sec:rdf_tensor}) using a fixed-depth trie $C_{T_g}$ of depth $d = $ ndim($T_g$) $=3$ with the alphabet $\mathbb{N}_n$. We call $C_{T_g}$ a \textit{a trie tensor or trie representation of $T_g$}, if: \\
 \centerline{$\forall \textbf{k} \in \mathbb{N}_n \times \mathbb{N}_n \times \mathbb{N}_n, v \neq 0: T_g[k] = v \iff C_{T_g}[k] = v$}\\
 
-Resolving a tensor trie of depth $d$ by key prefix $l = <k_0, ..., k_m>$ where $m <d$ is equavalent to slicing an RDF tensor using a slice key $s = <k_0, ..., k_m, e_{m+1}, ...,e_d>$ with $e_i$ = $\textbf{:}$. An example of a trie tensor is showed in figure \ref{fig:rdf_trie}.
+Resolving a tensor trie $C_T$ of depth $d$ by key prefix $l = <k_0, ..., k_m>$ where $m<d$ is equavalent to slicing the corresponding $d$-order tensor using a slice key $s = <k_0, ..., k_m, e_{m+1}, ...,e_d>$ with $e_i$ = \textbf{:}. Then the resultant tensor slice $T[k_0, ..., k_m, e_{m+1}, ...,e_d]$ ($d^{'}$-order where $d^{'}=d-m$) is represented by an inner trie node or \textit{subtrie} of depth $d^{'}$. \\
+
+In the context of this writing, the term \textit{node depth} corresponds to the sequences length that a node holds. For a trie tensor $C_T$ of depth $d$. The root node is assigned the depth $d$, an inner node holding prefix of size $m$, has the depth $d^{'}=d-m$. Leaf nodes share the depth 1. An example of a trie tensor is showed in figure \ref{fig:rdf_trie}.  \\
 
 \begin{figure}[h]
 	\centering
 	\includegraphics{figures/chapter2/trie4}
-	\caption{Trie representation of the tensor $T_g$ depicted in the Example\ref{ex:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+	\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
 	\label{fig:rdf_trie}
 \end{figure}
 \clearpage
 
 
 \subsubsection{Hypertrie}
+In the previous section we presented a trie as a data strucuture for realizing an order-3 RDF sparse tensor. 
+\textit{Boolean Hypertrie}.
+ A main requirement in Tentris is for the RDF tensor to be sliced by any combination of slicing positions. \\
 
-A main requirement in Tentris is for the RDF tensor to be sliced by any combination of slicing positions.
+\begin{definition}
+	\label{def:bht}
+	Let $H(d, A, E)$ with $d \geq 0$ be the set of all hypertries with depth $d$, alphabet $A$ and values $E$.
+	If $A$ and $E$ are clear from the context, we use $H(d)$.
+	We set $H(0) = E$ per definition. 
+	A hypertrie $h\in H(1)$ has an associated partial function $c^{(h)}_1: A\nrightarrow E$ that specifies outgoing edges by mapping edge labels to children.
+	For $ h^{'} \in H(n), n>1 $, partial functions $c^{(h')}_i: A\nrightarrow H(d-1), i \in \intrange{n}$ are defined.
+	Function $c^{(h')}_i$ specifies the edges for resolving the part equivalent to depth $i$ in a trie by mapping edge labels to children.
+	For a hypertrie $h$, $z(h)$ is the size of the set or mapping it encodes.
+\end{definition}
+
+\myworries{Continue with the Hypertrie thing}
+
+\clearpage
+
+\begin{sidewaysfigure}[h]
+		\centering
+		\includegraphics[scale=0.78]{figures/chapter2/hypertrie4}
+		\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+		\label{fig:rdf_hypertrie}
+\end{sidewaysfigure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{figures/chapter2/hypertrie4_slices}
+	\caption{Slice.}
+	\label{fig:rdf_hypertrie_slice}
+\end{figure}
+\clearpage
