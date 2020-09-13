@@ -6,23 +6,23 @@ In production, triple stores are used to store up to billions of RDF triples.
 To that extent, quality factors like efficiency and scalability are considered first-class citizens during triple stores' construction. 
 And the selection of internal data structures and the behavior definitions greatly influence the overall system efficiency. \\
 
-Fuseki, Blazegraph, Virtuoso, and RDF-3X are popular implementations of Triple stores. 
+Fuseki, Blazegraph, Virtuoso, and RDF-3X are popular implementations of Triple stores \cite{fouc,SYS13,Erl,rdf3x}. 
 One of the key design characteristics those triple stores have in common is that they all utilize B+ trees to store the indices. 
-Other categories of triple stores use 3D Boolean tensors to store and process RDF data. In such systems, each tensor dimension is mapped to a triple data aspect, i.e., subject, predicate, or object. Examples of tensor-based triple stores include systems like TensorRDF and BitMat. In the following, a novel tensor-based RDF triple store is presented. \\
+Other categories of triple stores use 3D Boolean tensors to store and process RDF data. Examples of such system include TensorRDF \cite{tensorrdf} and BitMat \cite{bitmat}. In such systems, each tensor dimension is mapped to a triple data aspect, i.e., subject, predicate, or object. Examples of tensor-based triple stores include systems like TensorRDF and BitMat. In the following, a novel tensor-based RDF triple store is presented. \\
 
 Tentris is a triple store variant designed by the data science research group at Paderborn university\cite{tentris2020}. 
 Tentris is an in-memory storage solution that represents RDF knowledge graphs as sparse order-3 tensors using a novel data structure, called Hypertire. 
 It then uses tensor algebra to carry out SPARQL queries by mapping SPARQL operations to Einstein summation\cite{einstein}. 
 At the time of this writing, Tentris' SPARQL engine realizes \textit{SPARQL-BGB}  (a subset of the SPARQL-algebra). 
-Consequently, the engine can execute SPARQL queries containing the following keywords: \verb|@prefix|, \verb|SELECT|, \verb|WHERE|, and \verb|DISTINCT|\cite{foundationofthesemanticweb}. \myworries{mention that you omit talking about the query aspects: Einstein summation, etc} \\
+Consequently, the engine can execute SPARQL queries containing the following keywords: \verb|@prefix|, \verb|SELECT|, \verb|WHERE|, and \verb|DISTINCT|\cite{Hitzler}. \myworries{mention that you omit talking about the query aspects: Einstein summation, etc} \\
 
 Since my work represents a further contribution to the project Tentris, I dedicate this section to deliver a preface for the relevant aspects. In subsection \ref{sec:tensor_algebra}, I specify what tensors are. A way of representing RDF graphs in tensors is showed in subsection \ref{sec:rdf_tensor}. Hypertrie data structure is visited in subsection \ref{sec:hypertrie}.
 
 \subsection{Tensor Algebra}
 \label{sec:tensor_algebra}
-In mathematics, the term Tensor holds a representation-independent meaning. According to \cite{kj}, Tensors are “objects with many indices that transform in a specific way under a change of
+In mathematics, the term Tensor holds a representation-independent meaning. According to \cite{rent}, Tensors are “objects with many indices that transform in a specific way under a change of
 Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, for tensors to be applied in a practical context, a more concrete definition should be selected. Among other choices, multi-dimensional arrays are widely used as a representation of tensors. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.
-Tensor was defined formally in \cite{tentris2020} as the following:
+In the context of Tentris \cite{tentris2020}, the term Tensor adopts the following concrete definition:
 
 \begin{definition}[Tensor]
 A mapping\\
@@ -99,7 +99,7 @@ Every triple $<s, p, o> \in g$ is also in ($RT \times RT \times RT$). For that, 
 \centerline{$T[i_s, i_p, i_o] = 1 \iff <res(i_s), res(i_p), res(i_o)> \in g$}
 
 \begin{example}
-	\label{ex:rdf_tensor}
+\label{ex:rdf_tensor}
 Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_7 \times N_7 \times N_7}$. 
 \end{example}
 
@@ -136,9 +136,9 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structure, I first clarify how tensors storing RDF graphs can be represented as tries. Then, I show why this is not engouh for our use case. \myworries{rephrase the concept}.
 
 \subsubsection{Trie}
-A \textit{Trie} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the ASCII codes set. Sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
+A \textit{Trie} \cite{Brass:2008:ADS:1434862} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the ASCII codes set. Sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
 
-A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$|. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to represent edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
+A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$| \cite{Brass:2008:ADS:1434862}. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to store edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
 
 A \textit{fixed-depth trie} $C$ is a trie that holds sequences of the same length $n$, termed as $keys$. In that case, a sequence $l = <l_0, … , l_m> \in \mathbb{A}^m$ of length $m <= n$ forms a \textit{key prefix}. $C[l]$ is defined as the node that is reached from the root node $r$ by walking along the nodes with edge labels equal to the entries of $l$. Hence, $C[l]$ could be undefined if no appropriate path exists. Moreover, \\
 

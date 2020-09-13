@@ -271,7 +271,7 @@ Following that approach will allow us to integrate the new Hypertrie implementat
 
 Next, I list the main algorithms that realize the core behaviors of Hypertrie when the space reduction approach is applied. The great proportion of my work was on expanding the code base of Hypertrie project to adapt the key path compression approach including the implementation of the accompanying algorithms\footnote{In this section, I list only the main algorithms}.
 
-\subsection{Key Search}
+\subsection{Key Retrieval}
 A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a path from a $Node_{d}$ to a leaf node where $d$ is the node depth\todo{Omit the redefinition of d as I did that earlier}. In other words, if $key$ is a non-zero entry in the tensor $T = h^{-1} (Node_{d})$\todo{Need a definition}. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node. \\
 
 \begin{algorithm}
@@ -356,6 +356,23 @@ A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a
 	
 \end{algorithm}
 
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node1$: a depth 1 node\\
+		$depth$: current node depth\\
+		$key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
+	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\SetKwFunction{KwFn}{node1\_key\_retrieval}
+	\KwFn{node1, depth, key} \;
+	\Begin{
+		\textbf{return} set of edges in $node1$ holds the key part $key[0]$\;
+	}
+	\caption{\sc Key Retrieval in depth 1 Nodes}
+	\label{algo:key_retrieval_depth1}
+	
+\end{algorithm}
+
 \clearpage
 
 \subsection{Key Insertion} 
@@ -395,15 +412,15 @@ Utilizing the state tuple $processed$ while processing a hypertrie node, we know
 \begin{algorithm}
 	\DontPrintSemicolon
 	\SetAlgoLined
-	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts,\\ $processed$: state of processed keyparts, $processed\_nodes$: dictionary of processed nodes}
+	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts,\\ $processed$: state of processed key parts, $processed\_nodes$: dictionary of processed nodes}
 	\SetKwFunction{KwFn}{node3\_insert}
 	\KwFn{node3, depth, key, processed, processed\_nodes} \;
 	\Begin{
 		\ForEach{$key\_pos$ in $\{e | e \in$ dom($processed$)$, processed[e] = 0\}$}{
 			$key\_part \gets key[key\_pos]$\;
 			$pos \gets id2pos(key\_pos, processed)$\;
-			$next\_processed \gets processed$ \;
-			$next\_processed[key\_pos] =1$ \;
+			$next\_processed = processed$ \;
+			$next\_processed[key\_pos] \gets1$ \;
 			$child\_ptr \gets$ \texttt{get(}$node3, pos, key\_part$\texttt{)}\;
 			$(child, tag) \gets child\_ptr$\;
 			\uIf{$child$ is empty}{
@@ -438,37 +455,91 @@ Utilizing the state tuple $processed$ while processing a hypertrie node, we know
 	\label{algo:key_insert_node3}
 \end{algorithm}
 
+
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node2$: a depth 2 node, $depth$: current node depth, $key$: array of key parts,\\ $processed$: state of processed key parts, $processed\_nodes$: dictionary of processed nodes}
+	\SetKwFunction{KwFn}{node2\_insert}
+	\KwFn{node2, depth, key, processed, processed\_nodes} \;
+	\Begin{
+		$processed\_nodes[processed] \gets node2$ \;
+		\ForEach{$key\_pos$ in $\{e | e \in$ dom($processed$)$, processed[e] = 0\}$}{
+			$key\_part \gets key[key\_pos]$\;
+			$pos \gets id2pos(key\_pos, processed)$\;
+			$next\_processed \gets$ cloning $processed$\;
+			$next\_processed[key\_pos] \gets 1$ \;
+			$child\_ptr \gets HT{pos}[key\_part]$\;
+			$(value, tag) \gets child\_ptr$\;
+			\uIf{$child\_ptr$ is empty}{
+				$next\_key\_part = key[pos2id(0, next\_processed)]$\;
+				$HT_{pos}[key\_part] \gets$ tagged pointer holding $next\_key\_part$ integer\;
+			}\Else{
+				\uIf{$tag = IS\_POINTER$}{
+					$child\_node \gets$ node to which address in $value$ points\;
+					\texttt{node1\_insert(}$child\_node, 1, key, next\_processed,processed\_nodes$\texttt{)}\;
+				}\ElseIf{$tag = IS\_INT$}{
+					$created\_node \gets processed\_nodes[next\_processed]$\;
+					\uIf{$created\_node$ exists}{
+						$value \gets$ hold a pointer to $created\_node$ \;
+						$tag \gets IS\_POINITER$ \;
+					}\Else{
+						$reconstruced\_key \gets <0, 0, 0>$\;
+						\For{$i$ in $[0, 1, 2]$}{
+							\lIf{$processed[i] == 1$}{$reconstruced\_key[i] = key[i]$}
+							\lElseIf{$i == key\_pos$}{$reconstruced\_key[i] = key\_part$}
+							\lElse{$reconstruced\_key[i] = value$}
+						}
+					}
+					$new\_node \gets$ create a new concrete hypertrie child node of depth 1\;
+					$HT_{pos}[key\_part] \gets$ tagged pointer holding pointer to $new\_child$\;
+					\texttt{node1\_insert(}$new\_node, 1, key, reconstruced\_key,next\_processed,processed\_nodes$\texttt{)}\;
+				}
+			}
+		}
+	}
+	\caption{\sc Key insertion for depth 2 node}
+	\label{algo:key_insert_node2}
+\end{algorithm}
+
+
+\begin{algorithm}[h]
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node1$: a depth 1 node, $depth$: current node depth, $key$: array of key parts,\\ $processed$: state of processed key parts, $processed\_nodes$: dictionary of processed nodes}
+	\SetKwFunction{KwFn}{node1\_insert}
+	\KwFn{node1, depth, key, processed, processed\_nodes} \;
+	\Begin{
+		$created\_node \gets processed\_nodes[processed]$\;
+		\If{$created\_node$ does not exist}{
+			$processed\_nodes[processed] = node1$\;
+		}
+		$key\_part \gets key[pos2id(0, processed)]$\;
+		add $key\_part$ to the set of key parts (edges) held by $node1$\;
+	}
+	\caption{\sc Key insertion for depth 1 node}
+	\label{algo:key_insert_node1_single_key}
+\end{algorithm}
+
+\begin{algorithm}[h]
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node1$: a depth 1 node, $depth$: current node depth, $key, reconstruced\_key$: array of key parts,\\ $processed$: state of processed key parts, $processed\_nodes$: dictionary of processed nodes}
+	\SetKwFunction{KwFn}{node1\_insert}
+	\KwFn{node1, depth, key, processed, reconstruced\_key, processed\_nodes} \;
+	\Begin{
+		$created\_node \gets processed\_nodes[processed]$\;
+		\lIf{$created\_node$ does not exist}{
+			$processed\_nodes[processed] = node1$\;
+		}
+		$key\_part_{1} \gets key[pos2id(0, processed)]$\;
+		$key\_part_{2} \gets reconstruced\_key[pos2id(0, processed)]$\;
+		add $key\_part$ and $key\_part_{2}$ to the set of key parts (edges) held by $node1$\;
+	}
+	\caption{\sc Key insertion for depth 1 node including the insertion of the reconstructed key}
+	\label{algo:key_insert_node1_double_key}
+\end{algorithm}
+
 \clearpage
 
 \subsection{Slicing} 
-
-\clearpage
-
-\subsection{Diagonal}
-
-\section{Storage Discussion}
-
-\todo{ALEX: Whether we skip that to the evaluation}
-Best case is easy. all triples are stored in the root node???
-During the evaluation phase, I will prove that the performance of the space efficient Hypertrie is at least as much as the performance of the base (reference) Hypertrie. 
-The compressed Hypertrie is \textbf{cache-conscious}. 
-That is the frequently accessed compressed key paths suffixes stored at the root node in array-based containers will increase the probability that those paths resides within cache. 
-
-\begin{table}[tb]
-	\centering
-	\setlength{\tabcolsep}{1ex}
-	\begin{tabular}{lrrrrl}
-		\toprule
-		Dataset&\#T&\#S&\#P&\#O& {Type}\\
-		\midrule
-		SWDF & 372\;\;\,k & 32\;\;\,k & 185 & 96\;\;\,k  & real-world\\ % structuredness 0.027901741842416984
-		DBpedia & 681\;M & 40\;M & 63\;k & 178\;M & real-world \\ % structuredness
-		WatDiv & 1\;\,G & 52\;M & 186 & 92\;M & synthetic\\ % structuredness 0.005427051162802224
-		% DBpedia & 681'333'018 & 40'426'431 & 62658 & 178'269'555
-		% WatDiv & 1091468578 & 52120385 & 186 & 92'240'568
-		\bottomrule
-	\end{tabular}
-	\caption{Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
-	\label{tab:datasets_stats}
-\end{table}
-

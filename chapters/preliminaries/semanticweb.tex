@@ -10,7 +10,7 @@ The Resource Description Framework (RDF), a standard for representing data in th
 
 \subsection{Resource Description Framework}
 \label{sec:rdf}
-The Resource Description Framework (RDF) is part of the W3C standard to define the web of data \cite{rdfonline}. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{Pasd}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{asd}. \\
+The Resource Description Framework (RDF) \cite{rdfonline} is part of the W3C standard to define the web of data. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{rfc3987}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{RDF11}. \\
 
 \begin{definition}[RDF Terms]
 Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be $B$ the set of
@@ -33,7 +33,7 @@ A set of of RDF Triples is called RDF graph.
 	The data in the graph presents a list of pioneers along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
 \end{example}
 
-We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{asd} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. \\
+We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{Hitzler} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. \\
 
 Listing \ref{lst:sparqlexample} shows a simple example of a SPARQL query
 against the RDF graph in table \ref{tab:rdf_graph_example}. \\
