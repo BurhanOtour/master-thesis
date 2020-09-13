@@ -11,7 +11,7 @@ In contrast, it can be considered an added feature that further contributes to t
 \todo{Chapter structure "revisit"}In this chapter, I deliver a motivation to the approach. Afterward, I discuss the new Hypertrie internal nodes' design needed to realize the path compression feature. Finally, algorithms defining the behaviors of the newly designed Hypertrie are also presented. 
 
 
-\section{Motivation}
+\section{Hypertrie Memory Utilization}
 
 Despite its operational efficiency, Hypertrie performance comes not without a trade-off. 
 Since Hypertrie is a special kind of a Trie data structure, it inherits some of the fundamental problems of  Tries. 
@@ -30,7 +30,7 @@ Despite the previously mentioned attempts to minimize the size of Hypertrie, the
 
 The purpose of the following approach is to try to reach a more space-efficient Hypertrie\todo{Continue here}.
 
-\section{Basic Concept}
+\section{Space Reduction Solution}
 
 The purpose of this section is to give a better intuition on the idea of path compression.  \\
 
@@ -68,13 +68,14 @@ For the example of RDF data above, a possible mapping for the terms used is give
 	\end{tabular}
 \end{center}
 
-\begin{figure}[htbp]
+\begin{sidewaysfigure}[htbp]
 	\centering
-	\vspace{-1in}
-	\includegraphics[width=1\textwidth]{figures/example.jpg}
-	\caption{Storing RDF in space-efficient Hypertrie}
-	\label{fig:example_compressed_trie}
-\end{figure}
+	\includegraphics[scale=0.74]{figures/chapter4/compressedBHT}
+	\caption{Storing RDF in space-efficient Hypertrie.}
+	\label{fig:rdf_compressed_hypertrie}
+\end{sidewaysfigure}
+
+\clearpage
 
 The Hypertrie will store the triple as shown in Figure \ref{fig:example_compressed_trie},  when the path compression technique is applied. It is straightforward to notice that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
 As a result, the tree height is cut down, and a substantial amount of memory is saved by storing objects in-place instead of storing them on the heap. 
@@ -131,7 +132,7 @@ For the pointer $ptr_{j}$ associated with the edge $k_{j}$ to serve the purpose 
 
 Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2}$ are denoted by $ptr_{j} = (value, tag)$. Such pointers carry two pieces of information. (1) A $value$ is the actual payload of bits, which can be viewed as either a memory address or a raw integer value depending on the tag value. (2) A $tag$ is the value held in the least significant bits (LSB) indicating whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
 
-
+\clearpage
 \begin{figure}
 	\centering
 	\vspace{-0.3in}
@@ -147,7 +148,7 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2
 	\caption{Depth 2 Node}
 	\label{fig:compressed_depth_2_node}
 \end{figure}
-
+\clearpage
 \subsection{Node Expansion}
 Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
 
@@ -329,7 +330,9 @@ A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a
 \begin{algorithm}
 	\DontPrintSemicolon
 	\SetAlgoLined
-	\KwIn{$node2$: a depth 2 node, $depth$: current node depth, $key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
+	\KwIn{$node2$: a depth 2 node\\
+		$depth$: current node depth\\
+		$key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
 	\KwOut{a boolean if a key represents a path in Hypertrie}
 	\SetKwFunction{KwFn}{node2\_key\_retrieval}
 	\KwFn{node2, depth, key} \;
@@ -353,12 +356,93 @@ A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a
 	
 \end{algorithm}
 
-
-Some text after. \\
+\clearpage
 
 \subsection{Key Insertion} 
+Similar to other tree-based data structures, the key insertion operation is recursive. Due to the fact that nodes at certain depth enjoys a unique  internal structure, the algorithm for adding keys will change depending on the target node in the recursion sequence. To achieve key insertion, two auxiliary constructs must be implemented. First, the algorithm should utilize a mechanism that keeps track of the processed key parts so far for each key path in hypertrie. A way to maintain such state information is to use a tuple $processed \in \mathbb{B}^3$, such that:\\
+
+\centerline{$\forall i \in \mathbb{N}_3 , processed[i] = \left\{ \begin{array}{rc} 1, & \mbox{key part at position }i\mbox{ is processed} \\ 0,  & \mbox{otherwise} \\ \end{array} \right.$}
+
+\hspace{2cm}
+
+Utilizing the state tuple $processed$ while processing a hypertrie node, we know the \textit{sub key}, the remaining key parts to be added. Hence, the state tuple is updated as we proceed in the construction of the key path during insertion; i.e. processing more key parts. \\
+
+ For that, a couple of utility functions are used to map the main key to sub keys. That is, they map key part indices of the inserted key to dimensions represented by the succeeding child node and vise versa. By that, we know which key part should be inserted at which position. $pos2ids$ maps node positions to key part indices, and $id2pos$ maps key part indices to node positions. Both functions are defined in the following:\\
+ 
+ \centerline{$pos2id(pos, processed) = pos + |\{e | e \in$ dom($processed$)$, e \leq pos, processed[e] = 1\}|$}
+ \hspace{2cm}
+ 
+ \centerline{$id2pos(id, processed) = id - |\{e | e \in$ dom($processed$)$, e \leq id, processed[e] = 1\}|$}
+ \hspace{2cm}
+ 
+ The second requirement to achieve efficient insertion similar to the original hypertrie insertion method is to preserve the concept of pointing to equal child nodes only once. This is done by setting up a dictionary $processed\_nodes: \mathbb{B}^3 \to node$ for each key insertion call.  $processed\_nodes$ maps instances of the state tuple $processed$ to inform which hypertrie nodes were already created for which combination of dimensions.
+
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts}
+	\SetKwFunction{KwFn}{insert}
+	\KwFn{node3, depth, key} \;
+	\Begin{
+		$processed \gets <0,0,0>$\;
+		$processed\_nodes \gets \{\}$\;
+		\texttt{node3\_insert(}$node3, depth, key, processed, processed\_nodes$\texttt{)}
+	}
+	\caption{\sc Key insertion main method}
+	\label{algo:key_insert}
+\end{algorithm}
+\clearpage
+\begin{algorithm}
+	\DontPrintSemicolon
+	\SetAlgoLined
+	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts,\\ $processed$: state of processed keyparts, $processed\_nodes$: dictionary of processed nodes}
+	\SetKwFunction{KwFn}{node3\_insert}
+	\KwFn{node3, depth, key, processed, processed\_nodes} \;
+	\Begin{
+		\ForEach{$key\_pos$ in $\{e | e \in$ dom($processed$)$, processed[e] = 0\}$}{
+			$key\_part \gets key[key\_pos]$\;
+			$pos \gets id2pos(key\_pos, processed)$\;
+			$next\_processed \gets processed$ \;
+			$next\_processed[key\_pos] =1$ \;
+			$child\_ptr \gets$ \texttt{get(}$node3, pos, key\_part$\texttt{)}\;
+			$(child, tag) \gets child\_ptr$\;
+			\uIf{$child$ is empty}{
+				$arr \gets [0, 0]$\;
+				\For{$i$ in $[0, 1]$}{
+					$arr[i] = key[pos2id(i, next\_processed)]$\;
+				}
+				$HTComm_{pos}[key\_part] = arr$\;
+			}\uElseIf{$tag == NON\_COMPRESSED$}{
+				\texttt{node2\_insert(}$child, 2, key, next\_processed, processed\_nodes$\texttt{)}\;
+			}
+			\ElseIf{$tag == COMPRESSED$}{
+				$new\_node \gets$ create a new concrete hypertrie child node of depth 2\;
+				$HT_{pos}[key\_part] = ptr(new\_node)$\;
+				\texttt{node2\_insert(}$new\_node, 2, key, next\_processed, processed\_nodes$\texttt{)}\;
+				$reconstruced\_key \gets <0, 0, 0>$\;
+				$arr \gets HTComm_{pos}[key\_part]$\;
+				\For{$i$ in $[0, 1, 2]$}{
+					\uIf{$i == key\_pos$}{
+						$reconstruced\_key[i] = key\_part$\;
+					}
+					\Else{
+						$reconstruced\_key[i] = arr[id2pos(i,next\_processed)]$\;
+					}
+				}
+				erase $HTComm_{pos}[key\_part]$\;
+				\texttt{node2\_insert(}$new\_node, 2, reconstruced\_key, next\_processed,processed\_nodes$\texttt{)}\;
+			}
+		}
+	}
+	\caption{\sc Key insertion for depth 3 node}
+	\label{algo:key_insert_node3}
+\end{algorithm}
+
+\clearpage
 
 \subsection{Slicing} 
+
+\clearpage
 
 \subsection{Diagonal}
 

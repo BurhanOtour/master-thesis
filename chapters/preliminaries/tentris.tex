@@ -159,9 +159,9 @@ In the context of this writing, the term \textit{node depth} corresponds to the 
 
 
 \subsubsection{Hypertrie}
-In the previous section we presented a trie as a data strucuture for realizing an order-3 RDF sparse tensor. 
-\textit{Boolean Hypertrie}.
- A main requirement in Tentris is for the RDF tensor to be sliced by any combination of slicing positions. \\
+In the previous section we defined a trie as a data strucuture for realizing an order-3 RDF tensor. The structure is memory-efficient as it sparsely encodes a Boolean-valued tensor by storing only the keys that map to 1. As keys with the same key prefixes share the same node, a moderate level of compression is achieved. Slicing is also efficient if the set of edges to children are represented using a well-designed hashtable or search tree\cite{bras}. \\
+
+A trie, as defined earlier, however, still lake the ability for flexible slicing, that is by any combination of dimensions. The trie tensor as it is defined so far allows slicing positions to only suffix the slice keys, thus using $s = <:, 3, :>$ as a slice key is not possible. Felxible slicing mush alwasy be maintained to enable resolving triple patterns (Sec. \myworries{???}). Tentris uses \textit{Hypertrie}, a novel trie-based data structure, for holding the keys of an RDF tensor. Hypertrie generalize the normal trie tensor concept by enabling the efficient slicing by any combination of dimensions. Hypertrie is defined formally based on Tentris paper \cite{tentris2020} in the following:\\
 
 \begin{definition}
 	\label{def:bht}
@@ -169,13 +169,18 @@ In the previous section we presented a trie as a data strucuture for realizing a
 	If $A$ and $E$ are clear from the context, we use $H(d)$.
 	We set $H(0) = E$ per definition. 
 	A hypertrie $h\in H(1)$ has an associated partial function $c^{(h)}_1: A\nrightarrow E$ that specifies outgoing edges by mapping edge labels to children.
-	For $ h^{'} \in H(n), n>1 $, partial functions $c^{(h')}_i: A\nrightarrow H(d-1), i \in \intrange{n}$ are defined.
+	For $ h^{'} \in H(n), n>1 $, partial functions $c^{(h')}_i: A \nrightarrow H(d-1), i \in \mathbb{N}_{n}$ are defined.
 	Function $c^{(h')}_i$ specifies the edges for resolving the part equivalent to depth $i$ in a trie by mapping edge labels to children.
 	For a hypertrie $h$, $z(h)$ is the size of the set or mapping it encodes.
 \end{definition}
 
-\myworries{Continue with the Hypertrie thing}
+\myworries{Continue like this} Informally, a ..... \\
 
+Figure \ref{fig:rdf_hypertrie} shows a hypertrie storing the RDF triples shown in table \ref{tab:rdf_graph_example}. Examples for slicing hypertrie with different slice keys corresponding to various combinations of slicing positions is presented in figure \ref{fig:rdf_hypertrie_slice}. \\
+
+\myworries{add definition here as needed}
+
+Add the concept of node \myworries{$processed\_nodes: \mathbb{B}^3 \to node$ }
 \clearpage
 
 \begin{sidewaysfigure}[h]
