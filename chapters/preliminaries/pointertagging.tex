@@ -1,28 +1,25 @@
 \section{Pointer Tagging}
 \label{sec:preliminaries:pointertagging}
 
-Pointer Tagging is a low-level programming technique that uses the spare low bits in a pointer to encode additional information. Using the Pointer tagging technique, pointer value (initially a memory address before tagging) can hold extra information about the point-to heap object or can be used as a meta-data to further describe the usage of the pointer data. Pointer tagging is mainly enabled because of the way heap objects are situated and accessed on modern computer architectures.
-
-
-\myworries{metaphorically}
+Pointer Tagging \cite{taggedpointer} is a low-level programming technique that uses the spare low bits in a pointer to encode additional information. Using the Pointer tagging technique, pointer value (initially a memory address before tagging) can hold extra information, \textit{a tag}. The tag can hold extra information about the point-to heap object or can be used as meta-data to further describe the usage of the pointer data. Pointer tagging is mainly enabled because of the way heap objects are situated and accessed on modern computer architectures.
 
 \subsection{Data Structure Alignment}
 \label{sec:preliminaries:data_alignment}
 Data alignment (also referred to as data structure padding) is a way in which heap objects are arranged and accessed by the CPU. CPUs in modern computer architecture (say 64-bit architecture) read data from and write data to memory more efficiently when data is aligned.  \\
 
-On an abstract level, computer memory can be seen as an array of words or bytes, each with its own address. Unlike bytes, the term word has ambiguate meaning. In the context of this work, we are targeting the generic term in the context of CPU architecture. That is, a "processor word" refers to the size of a processor register or memory address register. The term word also refers to the size of CPU instruction, or the size of a pointer depending on the exact CPU architecture. For example, in a 64-bit architecture, the word size (also pointer size) is 64 bits = 8 bytes.\todo{Figure need to be added} \\
+On an abstract level, computer memory can be seen as an array of words or bytes, each with its own address. Unlike bytes, the term word has ambiguate meaning. In the context of this work, we are targeting the generic term in the context of CPU architecture. That is, a "processor word" refers to the size of a processor register or memory address register. The term word also refers to the size of CPU instruction, or the size of a pointer depending on the exact CPU architecture \cite{OSConcept}. For example, in a 64-bit architecture, the word size (also pointer size) is 64 bits = 8 bytes.\\
 
-Generally, when a source program is executed, it is loaded into memory and put into a process $p$ for execution. All data objects in the program are mapped at certain point in time (during compilation or execution) to a physical memory address [ref: operating system concept]. Let us suppose we have the following snippet written in C language: \\
+Generally, when a source program is executed, it is loaded into memory and put into a process $p$ for execution. All data objects in the program are mapped at certain point in time (during compilation or execution) to a physical memory address \cite{OSConcept}. Let us take, as an example, the following coding snippet written in C++:
 
 \begin{verbatim}
-bool *b = new bool(true); // x = x21DE
-int* a = new int(123);  // a = x21E6
-char* c = new char(‘A’);  // c = x21EE
+bool *p1 = new bool(true);     // p1 = 0x011F0
+int  *p2 = new int(123);       // p2 = 0x11608
+char *p3 = new char(‘A’);      // p3 = 0x117A8
 \end{verbatim}
 
-According to C language specification, the size of integer value in memory is 4 bytes and size of char value is 1 byte [C spec]. When we execute the previously mentioned statements, however, the compiler (or linker) books 8 bytes of memory to hold the integer value and not 4 bytes as expected. The reason is that, the compiler adds padding to the heap objects in order to align them in memory. The same applies to the character value, as shown in figure 1 (on my notebook).  \\
+The execution of the snippet will metaphorically results in a memory layout similar to the one presented in figure \ref{fig:data_aligntment}. According to C++ language specification \cite{cpp}, the size of integer value in memory is 4 bytes, the size of char is 1 byte, and short is 2 bytes. When we execute the previously mentioned statements, however, the compiler (or linker) books 8 bytes of memory to hold the integer value and not 4 bytes as expected. The reason is that, the compiler adds padding to the heap objects in order to align them in memory. The same applies to the character value (Fig. \ref{fig:data_aligntment}).  \\
 
-Why data alignment? The CPU can access the memory only in word-sized chunks. So if our data always starts at a word it can be fetched efficiently. If it were to start somewhere in the middle of a word, the CPU will need to wait two or more memory cycles to fetch data from or write data to memory causing an increase in the CPU stall period which results in a significant performance overhead. \\
+Why data alignment? The CPU can access the memory only in word-sized chunks. So if our data always starts at a word it can be fetched efficiently. If data was to start somewhere in the middle of a word, the CPU will need to wait two or more memory cycles to fetch data from or write data to memory causing an increase in the CPU \textit{stall} period which results in a significant performance overhead  \cite{OSConcept}. \\
 
 
 many modern compilers implementations handle data alignment in memory automatically, example includes C, C++, Rust, C\# compilers.
@@ -30,7 +27,7 @@ many modern compilers implementations handle data alignment in memory automatica
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.8]{figures/chapter2/memorylayout}
-	\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:ma_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+	\caption{An example of memory layout with data objects of various types allocated in the heap. All objects are aligned by 8 bytes so their addresses are always multiple of 8.}
 	\label{fig:data_aligntment}
 \end{figure}
 
@@ -40,30 +37,20 @@ Some high-level programming languages, for example C++, offer developers a tool 
 \begin{figure}
 	\centering
 	\includegraphics[scale=1]{figures/chapter2/pointervalue}
-	\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:ma_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+	\caption{The structure of a tagged pointer. The number of tagging bits depends on the CPU architecture. Depending on the architecture, a $ N = log_{2}(word\_size)$ of LSBs bits are dedicated for tagging. In 64-bit architecture, $word_size = 8$, thus $N = 3$.}
 	\label{fig:tagged_pointer}
 \end{figure}
 
 
-Speaking in binary, example of pointer values are 0b1000 (=8), 0b10000 (=16), 0b11000 (=24), 0b11010101001011000 (=109144). The lower three bits, also called the least significant bits (LSBs), are always zero. So those three bits are basically free to use. We can use them to store a \textbf{tag}, which is an integer between 0 (0b000) and 7 (0b111).  \\ 
+Consequently, all pointer values share the fact that the first three low significant bits (LSBs) in their binary representation are always 0. As a result, we could exploit those bits to encode additional information without affecting the validity of the pointer (Fig. \ref{fig:tagged_pointer}).  \\ 
 
-Pointer tagging technique allows a dynamic representation of the value based on the tag. Thus, the actual bits payload of the pointer could represents a memory address for some time during the process execution but can later express the binary representation of a \texttt{char} value for example, depending on the execution context and after a change in the tag value during run-time. \\
-
-An approach to implement a tagged pointer is to develop a wrapper object around a pointer type variable. The wrapper can be equipped with adequate behaviours that govern the tag/ payload manipulation and retrieval. An example of pointer tagging implementation can be seen in listing (\todo{Add the listing}) \\
- 
-Pointer tagging can be applied in many use cases. In my work, there are a couple of use cases where pointer tagging served perfectly the purpose. Namely: storing integers in pointers and Dynamic de-referencing of void pointers (\texttt{void*}).\todo{Need to check this} 					
+As a use case, depending on the tag, pointer tagging allows a dynamic representation of the numeric value held by the pointer. Thus, the actual payload of the pointer could represents a memory address for some time during the process execution but can later express the binary representation of a \texttt{char} value for example, depending on the execution context and after a change in the tag value during run-time. \\
 
 \subsection{Tagged Pointer Implementation}
 
-\myworries{Tagged pointers technique doesn't compromise address space/ but does affect memory safty}
+An approach to implement a tagged pointer is to develop a wrapper object around a pointer type variable. By that, we insure safety by presenting a single point of failure in case of pointer value misuse. The wrapper can be equipped with adequate behaviours that govern the tag/ payload manipulation and retrieval. \\
 
-\myworries{Doesn't add extra overhead of extra space utilization	}
+Accessing the binary representation of pointer to enable pointer tagging is straightforward in most programming languages and is done by using bit-wise operations. \\
 
-
-
-\paragraph{Integer Tagged Pointer}
-
-\paragraph{Type Tagged Pointer} \todo{Keep it for the time being}
-Figure
 
 \clearpage
