@@ -32,12 +32,12 @@ many modern compilers implementations handle data alignment in memory automatica
 \end{figure}
 
 \subsection{Tagged Pointers}
-Some high-level programming languages, for example C++, offer developers a tool set to work with memory. Using such tool set, developers have access to low level memory abstraction. The main building block that enables memory management is the \textbf{pointer data type} and its ecosystem. A variable of type pointer holds a memory address of an object stored in the heap. Due to data alignment (cf. \ref{sec:data_alignment}), the memory address of any object in the heap memory is always $\alpha\cdot w$ where $w=8$ (the word size). This implies all addresses held as a pointer value are multiple of 8. A pointer thus can be 8, 16, 24, 109144, etc. But it can not be 7 or 13. \\
+Some high-level programming languages, for example C++, offer developers a tool set to work with memory. Using such tool set, developers have access to low level memory abstraction. The main building block that enables memory management is the \textit{pointer data type} and its ecosystem. A variable of type pointer holds a memory address of an object stored in the heap. Due to data alignment (Sec. \ref{sec:preliminaries:data_alignment}), the memory address of any object in the heap memory is always $\alpha\cdot w$ where $w=8$ (the word size). This implies all addresses held as a pointer value are multiple of 8. A pointer thus can be 8, 16, 24, 109144, etc. But it can not be 7 or 13. \\
 
 \begin{figure}
 	\centering
 	\includegraphics[scale=1]{figures/chapter2/pointervalue}
-	\caption{The structure of a tagged pointer. The number of tagging bits depends on the CPU architecture. Depending on the architecture, a $ N = log_{2}(word\_size)$ of LSBs bits are dedicated for tagging. In 64-bit architecture, $word_size = 8$, thus $N = 3$.}
+	\caption{The structure of a tagged pointer. The number of tagging bits depends on the CPU architecture. Depending on the architecture, a $ N = log_{2}(word\_size)$ of LSBs bits are dedicated for tagging. In 64-bit architecture, $word\_size = 8$, thus $N = 3$.}
 	\label{fig:tagged_pointer}
 \end{figure}
 

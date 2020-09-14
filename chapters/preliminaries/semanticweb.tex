@@ -1,20 +1,21 @@
 \section{Semantic Web}
 \label{sec:preliminaries:semanticweb}
 
-Today World Wide Web (WWW) holds a tremendous amount of different types of data (videos, images, text, geolocation data, books, publications, etc.). 
-Such data comes from different sources (web applications, warehouse systems, GPS devices, smartphones, ATMs, etc.).
-However, such data are still processed passively by computer system as there is no way to understand its meaning or context.
-The term \textbf{Semantic Web} was coined by Tim Berners-Lee for a \textit{Web of Data} (or \textit{Data Web}) \cite{LeeWeavingTheWeb} that can be processed by machines. 
+Today World Wide Web (WWW) holds a tremendous amount of data of different types(videos,
+images, text, geolocation data, books, publications, etc.). Such data comes from various sources
+(web applications, warehouse systems, GPS devices, smartphones, ATMs, etc.). However, such
+data are still processed passively by computer systems as there is no way to understand its meaning or context.
+Tim Berners-Lee coined the term \textit{Semantic Web} for a Web of Data (or Data Web) \cite{LeeWeavingTheWeb} that can be processed by machines.   
 The key technologies of Semantic Web are published by the World Wide Web Consortium (W3C). 
 The Resource Description Framework (RDF), a standard for representing data in the Semantic Web, and SPARQL, a query language for RDF data, are introduced in this section.
 
 \subsection{Resource Description Framework}
 \label{sec:rdf}
-The Resource Description Framework (RDF) \cite{rdfonline} is part of the W3C standard to define the web of data. Regardless of the nature of the data entity held on the web (blog post, image, publication, newspaper article,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{rfc3987}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{RDF11}. \\
+The Resource Description Framework (RDF) \cite{rdfonline} is part of the W3C standard to define the web of data. Regardless of the data nature held on the web (blog posts, images, publications, newspaper articles,  list of invoices, etc.), RDF identifies them uniformly as resources. In the standard, each resource is attached to a unique Internationalized Resource Identifier (IRI). IRI is a standard defined by the Internet Engineering Task Force in RFC 3987 \cite{rfc3987}. Literals are another sort of resources. A literal comprises a hardcoded value represented as a string; (“Martin,” “true”, “12.3”) are examples of literals. The third resource type is called a blank node. Blank nodes represent anonymous resources and always have local scope where they can be assigned a unique identifier. All definitions in this section are taken from “RDF 1.1 Concepts and Abstract Syntax” \cite{RDF11}. \\
 
 \begin{definition}[RDF Terms]
 Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be $B$ the set of
-\textit{blank nodes}. Further $I$, $L$ and $B$ are finite and pair-wise disjoint. Then the set $RT = I \cup L \cup B$ is called the set of RDF terms. 
+\textit{blank nodes}. Further $I$, $L$ and $B$ are finite and pair-wise disjoint. Then the set $RT = I \cup L \cup B$ is called the set of \textit{RDF terms}. 
 \end{definition}
 
 \subsubsection{RDF Triple, RDF Graph}
@@ -56,7 +57,7 @@ against the RDF graph in table \ref{tab:rdf_graph_example}. \\
 		ex:GeraldFord          &        foaf:spouse           &       ex:MichelleObama         \\
 		ex:AndrewNg          &        foaf:spouse           &       ex:CarolEReiley         \\
 	\end{tabular}
-	\caption{An RDF graph about a lama and a unicorn, what are their names and what they eat.}
+	\caption{An example of an RDF graph.}
 	\label{tab:rdf_graph_example}
 \end{table}
 

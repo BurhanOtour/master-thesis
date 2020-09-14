@@ -4,7 +4,7 @@
 There is no standard design guideline for triple stores. Hence different implementations of triple stores co-exist. Each subgroup of these implementations utilizes a category of underlying data structures as well as corresponding algorithms that govern the behavior. 
 In production, triple stores are used to store up to billions of RDF triples. 
 To that extent, quality factors like efficiency and scalability are considered first-class citizens during triple stores' construction. 
-And the selection of internal data structures and the behavior definitions greatly influence the overall system efficiency. \\
+The selection of internal data structures and the behavior definitions greatly influence the overall system efficiency. \\
 
 Fuseki, Blazegraph, Virtuoso, and RDF-3X are popular implementations of Triple stores \cite{fouc,SYS13,Erl,rdf3x}. 
 One of the key design characteristics those triple stores have in common is that they all utilize B+ trees to store the indices. 
@@ -12,11 +12,11 @@ Other categories of triple stores use 3D Boolean tensors to store and process RD
 
 Tentris is a triple store variant designed by the data science research group at Paderborn university\cite{tentris2020}. 
 Tentris is an in-memory storage solution that represents RDF knowledge graphs as sparse order-3 tensors using a novel data structure, called Hypertire. 
-It then uses tensor algebra to carry out SPARQL queries by mapping SPARQL operations to Einstein summation\cite{einstein}. 
+It then uses tensor algebra to carry out SPARQL queries by mapping SPARQL operations to tensor operations, namely slicing and Einstein summation\cite{einstein}. 
 At the time of this writing, Tentris' SPARQL engine realizes \textit{SPARQL-BGB}  (a subset of the SPARQL-algebra). 
-Consequently, the engine can execute SPARQL queries containing the following keywords: \verb|@prefix|, \verb|SELECT|, \verb|WHERE|, and \verb|DISTINCT|\cite{Hitzler}. \myworries{mention that you omit talking about the query aspects: Einstein summation, etc} \\
+Consequently, the engine can execute SPARQL queries containing the following keywords: \verb|SELECT|, \verb|WHERE|, and \verb|DISTINCT|\cite{Hitzler}. \\
 
-Since my work represents a further contribution to the project Tentris, I dedicate this section to deliver a preface for the relevant aspects. In subsection \ref{sec:tensor_algebra}, I specify what tensors are. A way of representing RDF graphs in tensors is showed in subsection \ref{sec:rdf_tensor}. Hypertrie data structure is visited in subsection \ref{sec:hypertrie}.
+Since my work represents a further contribution to the project Tentris, I dedicate this section to deliver a preface for the relevant aspects of the system design. In sub-section \ref{sec:tensor_algebra}, I specify what tensors are. A way of representing RDF graphs in tensors is showed in sub-section \ref{sec:rdf_tensor}. Hypertrie data structure is visited in sub-section \ref{sec:hypertrie}.
 
 \subsection{Tensor Algebra}
 \label{sec:tensor_algebra}
