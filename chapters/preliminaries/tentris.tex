@@ -20,9 +20,9 @@ Since my work represents a further contribution to the project Tentris, I dedica
 
 \subsection{Tensor Algebra}
 \label{sec:tensor_algebra}
-In mathematics, the term Tensor holds a representation-independent meaning. According to \cite{rent}, Tensors are “objects with many indices that transform in a specific way under a change of
-Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, for tensors to be applied in a practical context, a more concrete definition should be selected. Among other choices, multi-dimensional arrays are widely used as a representation of tensors. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.
-In the context of Tentris \cite{tentris2020}, the term Tensor adopts the following concrete definition:
+In mathematics, the term \textit{tensor} holds a representation-independent meaning. According to \cite{rent}, Tensors are “objects with many indices that transform in a specific way under a change of
+Basis”. This mathematical construct has many applications in physics, artificial intelligence, and other fields. However, to apply tensors in a practical context, a more concrete definition should be selected. Among other choices, a multi-dimensional arrays is widely used as a representation of a tensor. Throughout this work, a finite $n$-dimensional array for tensor representation is adopted.
+In the context of Tentris project \cite{tentris2020}, the term tensor adopts the following concrete definition:
 
 \begin{definition}[Tensor]
 A mapping\\
@@ -30,10 +30,10 @@ A mapping\\
 from a multi-index $\textbf{K}$ to a codomain $V$ is called tensor. $\textbf{K}$ is called \textit{key basis} of dimension $n \in \mathbb{N}$ with \\
 \centerline{ $\textbf{K} = K_0 \times K_1 \times ... \times K_{n-1}, K_i \subset \mathbb{N}$ } \\
 The tuple $\textbf{k} \in \textbf{K}$ is called \textit{key}, $K_i$ is called a \textit{key part basis} and $k \in K_i$ is called \textit{key part}.\\
-The dimension of the key basis is also called dimension of the tensor and is denoted by ndim($T$)=$n$. Further, nnz($T$) = $|\{\textbf{k} \in \textbf{K} | T(\textbf{k})  \neq 0\}|$ denotes the \textit{ number of non-zero entries}.
+The dimension of the key basis is also called dimension of the tensor and is denoted by ndim($T$)=$n$. Further, nnz($T$) = $|\{\textbf{k} \in \textbf{K} | T(\textbf{k})  \neq 0\}|$ denotes the \textit{ number of non-zero entries} in tensor $T$.
 \end{definition} 
 
-To resolve a value of a tensor, we use the array subscript notation $T[k_0, .. , k_{n-1}]$. Moreover, the symbol $V^{\textbf{K}}$ denotes the set of all mappings $T: \textbf{K} \to V$. My work exclusively consider tensors $T$ with $\mathbb{B}$ or $\mathbb{N}$ as codomain and only use multi-indexes $K_1 = ... = K_n \subset \mathbb{N}$. An $n$-dimensional tensor is also called \textit{order-$n$} tensor.
+To resolve a value of a tensor, we use the array subscript notation $T[k_0, .. , k_{n-1}]$. Moreover, the symbol $V^{\textbf{K}}$ denotes the set of all mappings $T: \textbf{K} \to V$. My work exclusively consider tensors $T$ with $\mathbb{B}$ or $\mathbb{N}$ as codomain and only use multi-indexes with equal key part basis $K_1 = ... = K_n \subset \mathbb{N}$. An $n$-dimensional tensor is also called \textit{order-$n$} tensor.
 \begin{example}
 \label{tensors_examples}
  In the following, some examples to illustrate the Definition 2.3:
@@ -71,10 +71,10 @@ all entries with other key parts at position $i$ and removes $K_i$ from the resu
 \begin{example}
 	Back to the third item in Example \ref{tensors_examples}, slicing tensor $Y$ by slice keys $s_1 = <:, 1, :>$ results in an order-2 tensor $Z_1 = Y[:, 1, :]$, and with a slice key $s_2 = <0, 1, :>$ results in an order-1 tensor $Z_2 = Y[0, 1, :]$:\\
 	
-	 \centerline{$Z_1 = \left[ \begin{array}{cc} 1 & 2 \\ 7 & 11 \\ \end{array}\right]$}  
+	 \centerline{$Z_1 = \left[ \begin{array}{cc} 3 & 5\\ 13 & 15 \\ \end{array}\right]$}  
 	 
 	 
-	 \centerline{$Z_2 = \left[ \begin{array}{c} 1 \\ 2 \\ \end{array}\right]$} 
+	 \centerline{$Z_2 = \left[ \begin{array}{c} 3 \\ 5 \\ \end{array}\right]$} 
 \end{example}
 
 Worth to mention that, slicing operation is associative, meaning that applying a sequence of slicing operations with different grouping to tensor $Y$ brings the same results:
@@ -92,18 +92,31 @@ Calculate the summation result (\myworries{from the paper})
 
 \subsection{Storing RDF Graphs in Tensors}
 \label{sec:rdf_tensor}
-Based on \cite{tentris2020}, let $g$ be an RDF graph with IRIs ($I$), blank nodes ($B$) and literals ($L$) being finite sets, and thus the set of RDF terms $RT$ is also finite (Sec. \ref{sec:rdf}). We define a bijective function $id_{RT}: RT \to N_n$ where $|RT|=n$. We call the function \textit{index of resources}. $id_{RT}$ maps each RDF term to a unique identifier. Similarly, we define the \textit{resources by indices} function as $res_{RT} = id_{RT}^{-1}$. 
-We omit the use of the subscript $RT$ with the functions' names $id_{RT}$ and $res_{RT}$ when it is clear from the context. \\
+Let $g$ be an RDF graph with IRIs ($I$), blank nodes ($B$) and literals ($L$) being finite sets, and thus the set of RDF terms $RT$ is also finite (Sec. \ref{sec:rdf}). We define a bijective function $id_{RT}: RT \to N_n$ where $|RT|=n$. $id_{RT}$ maps each RDF term to a unique identifier. We call this function \textit{index of resources}.  Similarly, we define the \textit{resources by indices} function as $res_{RT} = id_{RT}^{-1}$. 
 
-Every triple $<s, p, o> \in g$ is also in ($RT \times RT \times RT$). For that, we can define an order-3 tensor $T \in \mathbb{B}^{N_n \times N_n \times N_n}$. We store the triple $<s, p, o>$ in $T$ by setting $T[id(s), id(p), id(o)] = 1$ and all other entries in $T$ are set to 0. We call $T$ the tensor representation of the RDF graph g and denoted by $T_g$. In other words: \\
+
+
+Every triple $<s, p, o> \in g$ is also in ($RT \times RT \times RT$). For that, we can define an order-3 tensor $T \in \mathbb{B}^{N_n \times N_n \times N_n}$ with equal key part basis $N_n$. We store the triple $<s, p, o>$ in $T$ by setting $T[id(s), id(p), id(o)] = 1$ and all other entries in $T$ are set to 0. We call $T$ the tensor representation of the RDF graph g and denoted by $T_g$. In other words: \\
 \centerline{$T[i_s, i_p, i_o] = 1 \iff <res(i_s), res(i_p), res(i_o)> \in g$}
+
+Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolean tensor}. Subject, predicate, and object are associated with one dimension each. 
+
+\begin{remark}
+	We omit the use of the subscript $RT$ with the functions' names $id_{RT}$ and $res_{RT}$ when it is clear from the context. 
+\end{remark}
+
+\begin{remark}
+	In practice, a dimension range  ($|RT| =n$) of an RDF tensor $T_g$ fits much more than the bounded resources' IDs in $g$ for that dimension. In \cite{tentris2020}, however, it is proven that by choosing equal key part basis for enable efficient dimension matching using Einstein notation.
+\end{remark}
+
+\begin{remark}
+	As $T_g$ can store a super set of RDF triple in $g$, we call $T_g$ \textit{a sparse tensor}
+\end{remark}
 
 \begin{example}
 \label{ex:rdf_tensor}
 Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_7 \times N_7 \times N_7}$. 
 \end{example}
-
-Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolean tensor}. Subject, predicate, and object are associated with one dimension each. In practice, a dimension range  ($|RT| =n$) of an RDF tensor $T_g$ fits much more than the bounded resources' IDs in $g$ for that dimension. In \cite{tentris2020}, however, it is proven that by choosing equal key part basis for enable efficient dimension matching using Einstein notation. As $T_g$ can store a super set of RDF triple in $g$, we call $T_g$ \textit{a sparse tensor}
 
 \begin{table}[h]
 	\centering
@@ -118,7 +131,7 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 		:e2 (3) & rdf:type (6) & dbr:Unicorn (7) \\
 		:e4 (5) & rdf:type (6) & dbr:Unicorn (7) \\
 	\end{tabular}
-	\caption{An RDF graph example. Resources are printed alogn with their corresponding IDs (enclosed in brackets).}. 
+	\caption{A list of RDF triples representing an RDF graph $g$. Resources are printed alogn with their corresponding IDs (enclosed in brackets).}. 
 	\label{tab:rdf_tensor}
 \end{table}
 
@@ -129,6 +142,16 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 	\label{fig:rdf_tensor}
 \end{figure}
 
+\subsubsection{Mapping SPARQL to tensors}
+The ability to bridge SPARQL algebra to tensor operations is a strict requirement to realize a tensor-based triple store. For instance, a translation of triple pattern and basic graph pattern, core building blocks of SPARQL semantic, to tensor operations enables the triple store to evaluate queries based on those patterns, such as \verb|SELECT| queries. 
+
+\paragraph{Triple Pattern} A slice of a tensor does basically what triple pattern does to the corresponding RDF graph. Thus, a triple pattern tuple $tp$ can be viewed as a slice key $s$ in the tensor domain. Slice positions ($\textbf{:}$) in $s$ are set at locations corresponding to the where variables are defined in $tp$.  Other locations in $s$ are set to concrete key parts (IDs) that maps to certain RDF terms defined in the tuple at the corresponding positions. Each variable in the triple pattern is associated with one dimension of the tensor. Now, evaluating a triple pattern $tp$ against an RDF graph $g$, is equivalent to slicing the tensor $T_{g}$ using slice key $s$. Then, the set of keys to non-zero elements in $S = T_{g}[s]$ are selected and the bounding key parts are assigned to the set of variables in $tp$ at the designated positions. \\
+
+
+\begin{example}
+	let $tp$ be a triple pattern defined as \verb|<?person ex:type ?type>| to be evaluated against the RDF graph $g$ in table \ref{tab:rdf_graph_example}.  An equivalent slice key $s$ for $tp$ is $s=$\verb|<:, 6, :>|. Slicing the RDF tensor $T_{g}$ (Fig. \ref{fig:rdf_tensor}) using $s$ results in an order-2 tensor with two non-zero entries (3, 7), (5, 7). Thus, the set of solution mappings is:\\ $\Omega = \{[?person \to res_{RT}(3), ?type \to res_{RT}(7)], [?person \to res_{RT}(5), ?type \to res_{RT}(7)]\}$.
+\end{example}
+
 \clearpage
 
 \subsection{Tentris and Hypertrie}
@@ -136,6 +159,7 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structure, I first clarify how tensors storing RDF graphs can be represented as tries. Then, I show why this is not engouh for our use case. \myworries{rephrase the concept}.
 
 \subsubsection{Trie}
+\label{sec:trie}
 A \textit{Trie} \cite{Brass:2008:ADS:1434862} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the ASCII codes set. Sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
 
 A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$| \cite{Brass:2008:ADS:1434862}. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to store edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 

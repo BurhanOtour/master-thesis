@@ -1,72 +1,50 @@
 \chapter{Space Reduction Approach}
 \label{ch:approach}
 
-This part of the thesis discusses the approach to substantially mitigates the space inefficiency characteristic of Hypertrie.  
+In this chapter, I discuss the adopted approach to substantially mitigates the space inefficiency of Hypertrie.  
 The technique relies mainly on compressing a Hypertire path with specific characteristics. 
-Worth mentioning that the approach does not neglect the other attempts already realized to minimize Hypertrie memory footprint. 
-In contrast, it can be considered an added feature that further contributes to the space reduction of the overall Hypertrie data structure. 
+Worth mentioning that the approach does not neglect the other attempts already realized to minimize Hypertrie's memory footprint. 
+In contrast, it could be considered an added feature that further contributes to the space reduction of the overall Hypertrie data structure. \\
 
-\todo{Talk about where my programming work resides?}
-
-\todo{Chapter structure "revisit"}In this chapter, I deliver a motivation to the approach. Afterward, I discuss the new Hypertrie internal nodes' design needed to realize the path compression feature. Finally, algorithms defining the behaviors of the newly designed Hypertrie are also presented. 
+This part of the work delivers motivation to the approach. Afterward, an illustration of the new Hypertrie internal nodes' design needed to realize the solution is delivered. The chapter ends with a presentation of the cor algorithms that define the behaviors of the newly designed Hypertrie. 
 
 
 \section{Hypertrie Memory Utilization}
-
+\label{sec:hypertrie_memory_utilization}
 Despite its operational efficiency, Hypertrie performance comes not without a trade-off. 
 Since Hypertrie is a special kind of a Trie data structure, it inherits some of the fundamental problems of  Tries. 
-One of these problems is the excessive space utilization in a worst-case scenario.  \\
+One of these problems is the excessive space utilization in a worst-case scenario \cite{Brass:2008:ADS:1434862}.  \\
 
+The current design and implementation of Hypertrie \cite{tentris2020}, however, mitigates the space inefficiency characteristic in two ways. 
+First, each partial function $c^{(h)}_i$ (Def. \ref{def:bht}) in each hypertrie node $h$ is realized using a custom sparse hash table $HT$ instead of arrays or linked lists to store the key parts. 
+By using hash table, Hypertrie's nodes only stores keys that form prefixes to already existed paths. 
+In contrast, arrays utilization in normal Tries considers the whole alphabet set in each node with many array entries store pointers that refer to null (Sec. \ref{sec:trie}).  \\
 
-The current design and implementation of Hypertrie, however, mitigates the space inefficiency characteristic in two ways. 
-First, for each tensor dimension mapping in each node, the Hypertrie uses custom hash map data structures instead of arrays or linked lists to store the keys. 
-By using a map, Hypertrie's nodes only stores keys that form prefixes to already existed paths. 
-In contrast, arrays utilization in normal Tries considers the whole alphabet set in each node with many array entries store pointers that refer to null\todo{cite!}.  \\
+The adoption of hash tables in Hypertrie also delivers extra performance as looking up keys is nearly constant compared to linked list search where it has a linear computational complexity $O(n)$. 
+The other attempt to reduce the overall space requirement is to store equal nodes (Sub-hypertrie) only once by making use of the associativity characteristic of the slicing operations in tensors (Sec. \ref{sec:tensor_algebra}). That is, hypertrie takes advantage of that fact that the slicing order relative to the root node has no influence when slices are chained. Example: $T[k_0, k_1, ....] = (T[k_0, :, ....])[k_1, ....] = (T[:, k_1, ....])[k_0, ....].$ \\
 
-The adoption of maps in Hypertrie also delivers extra performance as looking up keys in a carefully designed map is nearly constant compared to linked list search where it has a linear complexity $O(n)$. 
-The other solution realized by Hypertrie to reduce the overall space requirement is to store equal nodes (Subhypertrie) only once. In this way, Hypertrie achieves a moderate level of compression in practice. \\
-
-Despite the previously mentioned attempts to minimize the size of Hypertrie, the excessive memory requirement is still a bottleneck. The case can be witnessed when the set of RDF triples needed to be indexed by Hypertrie increases in size with less overlapping between its elements. As a result, many intermediate nodes store map with a single entry for a particular dimension where the entry hosts a space for key and a pointer. This becomes a space redundancy issue when the leaf node referenced by the pointer has one key only. \\ 
-
-The purpose of the following approach is to try to reach a more space-efficient Hypertrie\todo{Continue here}.
+By exploiting the equivalent slicing concept and store equal sub-hypertrie nodes only once, it is proved that the upper storage bound of hypertrie $h \in H(d)$ is $\vartheta(2^{d-1}. d . z(h))$, where $z(h)$ is the number of non-zero entries \cite{tentris2020}. Since, hypertrie realizes an RDF tensor, then $d=3$. Thus, the upper storage bound is $\vartheta(12 . z(h))$.
+\vspace{0.5cm}
 
 \section{Space Reduction Solution}
+Despite the previously mentioned attempts to minimize the size of Hypertrie (Sec. \ref{sec:hypertrie_memory_utilization}), the excessive memory utilization is still a bottleneck. The case can be witnessed in practice when the set of RDF triples needed to be indexed by hypertrie increases in size with less overlapping between its triples. As a result, a set of nodes, including the root node, will store edges to children with single entry for a particular dimension. Nevertheless, we still need to utilize a space to host a pointer to that child node. This results in a space redundancy issue \cite{PATRICIA}. 
 
-The purpose of this section is to give a better intuition on the idea of path compression.  \\
+\begin{example}
+\label{ex:space_problem}
+Back to the example depicted in figure \ref{fig:rdf_hypertrie}:
+\begin{enumerate}
+	\item The inner node labeled with \verb|<4, :, :>| contains an edge = 3 at position 1 that maps to leaf node with a single entry. 
+	\item Another example in the same structure is the root node $r$ along with its child $h = c_0^{(r)}(5)$. It is noticeable that  $h$ also map its edges to single-element lead nodes.
+\end{enumerate}
 
-Assuming we want to store the set of RDF triples in listing \ref{lst:example}, presented in Turtle syntax, in our space-efficient Hypertrie: 
+\end{example}
 
-\begin{lstlisting}[caption={An example set of RDF triples},label={lst:example}]
-@prefix rel: <http://www.example.com/schemas/relationship/> .
-@prefix ex: <http://www.example.com/schemas/entities/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+Inspired by PATRICIA \cite{PATRICIA}, the redundancy problem mentioned above can be eliminated by recursively storing a single-element children into their parent nodes resulting in a \textit{path compression}. In other words, we compress the hypertrie branches by storing \textit{key suffixes} into their parent node at the key part from which the suffix was branched. Back to the example \ref{ex:space_problem}, the leaf node labeled with \verb|<4, :, 3>| can be compacted along with its parent edge in its parent node \verb|<4, :, :>| at the edge 3. Similarly, the leaf nodes \verb|<5, 6, :>| and \verb|<5, :, 7>| can be stored into their parent node \verb|<5, :, :>| at the respective edges. However, the parent node itself represents a single sub key, hence it can be compacted into the root node at edges = 5 in position 0. \\
 
-ex:Germany rel:capital ex:Berlin .
-ex:USA rel:capital ex:Washington_DC
-ex:USA rel:political_city ex:Washington_DC
-ex:Germany rel:population "82.79e6"^^xsd:integer	
-\end{lstlisting}
-
-Tentris do not store the actual values of RDF terms (RTs). Instead, it stores their associated identifiers. 
-For generating identifiers, a bijective function $id: RT \to N$ is used. 
-For the example of RDF data above, a possible mapping for the terms used is given below: \\
-
-\begin{center}
-	\begin{tabular}{ |c|c| } 
-		\hline
-		$RT$ & $id$ \\
-		\hline
-		ex:Germany & 17 \\ 
-		rel:capital & 4 \\ 
-		ex:Berlin & 30 \\ 
-		ex:USA & 20 \\
-		ex:Washington\_DC & 40 \\
-		rel:political\_city & 5 \\
-		rel:population & 6 \\
-		82.79e6 (integer) & 35 \\
-		\hline
-	\end{tabular}
-\end{center}
+Applying the path compression approach this way will introduce a modified version of hypertrie, a \textit{compressed hypertrie}.
+Figure \ref{fig:rdf_compressed_hypertrie} depicts a compressed hypertrie variant that stores the RDF graph $g$ in table \ref{tab:rdf_graph_example}.
+when the path compression technique is applied. It is straightforward to notice that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
+As a result, the tree height is cut down, and a substantial amount of memory is saved by storing objects in-place instead of allocating extra space to store pointers to children. 
 
 \begin{sidewaysfigure}[htbp]
 	\centering
@@ -75,28 +53,13 @@ For the example of RDF data above, a possible mapping for the terms used is give
 	\label{fig:rdf_compressed_hypertrie}
 \end{sidewaysfigure}
 
-\clearpage
-
-The Hypertrie will store the triple as shown in Figure \ref{fig:example_compressed_trie},  when the path compression technique is applied. It is straightforward to notice that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
-As a result, the tree height is cut down, and a substantial amount of memory is saved by storing objects in-place instead of storing them on the heap. 
-
-\todo{talk about the idea of preserving the space saving technique like the one of pointing to an already existed node only once}So, the memory for the pointer to the object on the heap is saved. 
-The same method is applied for the root node where keys for a specific dimension are branched by a \textit{lonely path}, i.e. a key path where each element has a single child element. \\
 
 \section{Compressed Hypertrie Nodes}
-In order to achieve path compression in Hypertrie, fundamental design changes need to take place. 
-By that, we can enable the node to store the entire key suffix\todo{define key suffix}. 
-Concretely, each group of Hypertrie nodes in certain tree depth will have their own internal node representation.  \\
+\label{sec:compressed_nodes_representation}
+In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix.
+As the size of key suffixes varies depending on the depth of the parent node, each group of Hypertrie nodes at certain depth will have their own internal node representation. In details, each hypertrie node of depth $d$ should realize a \textit{container} concept of size $d-1$ for every compressed path stored in it. On the other hand, compressed hypertrie nodes should be \textit{adaptive} to change. As the hypertrie state changes, for example by adding a new key, holding a compressed key path at certain edge may no longer be valid. The node at that particular edge mush be branched down to child nodes. \\
 
-We create \textbf{Adaptive Hypertrie nodes}. \\
-
-Concretely, each node must hold internal \textbf{containers} where key suffixes can be stored. \\
-
-We reduce the space requirement of Hypertrie by collapsing Hyptertrie nodes to. \\
-
-\todo{Talk about the Hypertrie node compressed path container}
-
-From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming feature, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
+From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming features, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
 
 \subsection{Internal Node Representations}
 \label{ch:approach_node_structure}
@@ -541,5 +504,3 @@ Utilizing the state tuple $processed$ while processing a hypertrie node, we know
 \end{algorithm}
 
 \clearpage
-
-\subsection{Slicing} 
