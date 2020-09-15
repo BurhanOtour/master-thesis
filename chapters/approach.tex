@@ -41,15 +41,15 @@ Back to the example depicted in figure \ref{fig:rdf_hypertrie}:
 
 Inspired by PATRICIA \cite{PATRICIA}, the redundancy problem mentioned above can be eliminated by recursively storing a single-element children into their parent nodes resulting in a \textit{path compression}. In other words, we compress the hypertrie branches by storing \textit{key suffixes} into their parent node at the key part from which the suffix was branched. Back to the example \ref{ex:space_problem}, the leaf node labeled with \verb|<4, :, 3>| can be compacted along with its parent edge in its parent node \verb|<4, :, :>| at the edge 3. Similarly, the leaf nodes \verb|<5, 6, :>| and \verb|<5, :, 7>| can be stored into their parent node \verb|<5, :, :>| at the respective edges. However, the parent node itself represents a single sub key, hence it can be compacted into the root node at edges = 5 in position 0. \\
 
-Applying the path compression approach this way will introduce a modified version of hypertrie, a \textit{compressed hypertrie}.
+Applying the path compression approach this way will introduce a modified version of hypertrie, a \textit{compressed hypertrie}. Edges that map to key suffixes stored in parent nodes are termed as \textit{compressed edges}. 
 Figure \ref{fig:rdf_compressed_hypertrie} depicts a compressed hypertrie variant that stores the RDF graph $g$ in table \ref{tab:rdf_graph_example}.
-when the path compression technique is applied. It is straightforward to notice that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
+when the path compression technique is applied. It is noticeable that many keys stored in the second level nodes (depth=2) do not need to be branched further to point to other nodes in the third level. 
 As a result, the tree height is cut down, and a substantial amount of memory is saved by storing objects in-place instead of allocating extra space to store pointers to children. 
 
 \begin{sidewaysfigure}[htbp]
 	\centering
 	\includegraphics[scale=0.74]{figures/chapter4/compressedBHT}
-	\caption{Storing RDF in space-efficient Hypertrie.}
+	\caption{Storing RDF in space-efficient Hypertrie (Compressed Hypertrie).}
 	\label{fig:rdf_compressed_hypertrie}
 \end{sidewaysfigure}
 
@@ -59,41 +59,41 @@ As a result, the tree height is cut down, and a substantial amount of memory is 
 In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix.
 As the size of key suffixes varies depending on the depth of the parent node, each group of Hypertrie nodes at certain depth will have their own internal node representation. In details, each hypertrie node of depth $d$ should realize a \textit{container} concept of size $d-1$ for every compressed path stored in it. On the other hand, compressed hypertrie nodes should be \textit{adaptive} to change. As the hypertrie state changes, for example by adding a new key, holding a compressed key path at certain edge may no longer be valid. The node at that particular edge mush be branched down to child nodes. \\
 
-From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming features, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. \\
+From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming features, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. In this section, I delve into the internal design of each type of compressed hypertrie nodes and discuss the concept of virtual node that enable slicing in the compressed mode. \\
+\begin{remark}
+The following sections make use of all the terminologies, definitions, and conventions defined in section \ref{sec:preliminaries:tentris} that refer to various aspects of tensors and trie (including hypertrie).
+\end{remark}
+
+\begin{remark}
+	The term $H(d)$ in the following sections will refer to the set of all nodes of depth $d$ in the compressed version of hypertrie, not the original hypertrie.
+\end{remark}
+
 
 \subsection{Internal Node Representations}
 \label{ch:approach_node_structure}
-Now I come to the part where the internal structure of space-efficient Hypertrie nodes are discussed. 
-In my approach, it is a requirement to realize the container concept for each node\footnote{Leaf nodes are not considered.} . 
-As a result, each inner node should still be able to expand at certain edges to sub Hypertrie nodes while maintaining a compressed key path in its bounded container for other edges. \\
+This section summarizes the design decision of compressed hypertrie nodes. A major step to implement the path compression approach is to the container concept for each node type\footnote{Leaf nodes are not considered.} (Sec. \ref{sec:compressed_nodes_representation}).
+As a result, each inner node should still be able to expand at certain edges to sub Hypertrie nodes while maintaining a compressed key path stored in containers bounded to other edges (compressed edges). \\
 
-The compressed key path container implementation varies depending on the node depth. 
-The idea of having different internal representations comes from the fact that, based on the current structure of nodes on depth two, I found that there is no need to add an additional structure that serves as a container for the key path. \todo{smaller sentences with less pronoun}
-Instead, I exploit the space dedicated to pointer value existed as a value in the hash table\todo{discuss the existence of Hypertire structure} of store the compressed key path.\todo{ALEX: is this sentence scientifically accurate?} \\ 
-
-\todo{ALEX: Why using tagged pointer for internal nodes saves space (hash tables already have initial space values? Answer: Yes)}
-
-Since Hypertrie's internal nodes can be either a root node or depth two nodes, we can distinguish two variants of internal node representations: 
+The compressed key path container implementation varies depending on the node depth. Since Hypertrie's internal nodes can be either a root node or depth two nodes, we can distinguish two variants of internal node representations: \\
 
 \subsubsection{Depth 3 Node (root node)} 
 %As the Hypertrie has a predefined fixed depth $d = 3 $, There exists a single root node. 
-In addition to the set of edges (hash tables) $HT_{3,p}$ for each position $p \in P = \{0, 1, 2\}$, the root node also holds another array of hash tables $CommHT_{p}$ that maps key parts $k_{j}$ to static arrays $arr_{j}$. 
+In addition to the set of edges (hash tables) $HT_{p}$ for each position $p \in P = \{0, 1, 2\}$, the root node $r \in H(d = 3)$ additionally holds another array of hash tables $CommHT_{p}$ that maps key parts $k_{j}$ to static arrays $arr_{j}$ of the size $d -1 = 2$. 
 Each array will serve as the container for the key path prefixed by the associated key part $k_{j}$ at the corresponding position $p$ as depicted in Fig. \ref{fig:compressed_depth_3_node}. 
-We call the edges $k_{j}$ stored  in $CommHT_{p}$ \textbf{compressed edges}. Clearly, a key part at a particular position $p$ can either represents a compressed or non-compressed edge at a time, so it exists in either $HT_{p}$ or $CommHT_{p}$. 
+In this context, the key part $k_{j}$ stored in $CommHT_{p}$ represent a compressed edge. Clearly, a key part at a particular position $p$ can either represents a compressed or non-compressed edge at a time, so it exists in either $HT_{p}$ or $CommHT_{p}$. 
 The remaining key path $k_{S} = <k_{1}, k_{2}>$ associated with each compressed edge $k_{j}$ holds the key part chain ordered by their presence in the key. \\
 
 Worth to mention that the key path associated with each compressed edge still represents a $2D$ sparse tensor $S$ that results from slicing tensor $T$ represented by the root node at position $p$ with key part $k_{j}$. The resultant tensor $S$ has a single entry $<k_{1}, k_{2}>$ that evaluates to $1$. 
 As a result, it is important to maintain the order of the elements in the compressed path $arr_{j}$ as each key $arr[i]$ represents the single edge at position $i$ in $S$ whose child is the other array entry. \\
 
-\subsubsection{Depth 2 Node} Internal nodes with $d=2$ realize the static container concept associated with compressed edges differently than for the root node. 
-\todo{Talk about hash table capacity}
-Considering the number of internal nodes, it becomes unfeasible, assigning an extra set of hash tables for each node that serve as key part chains containers. \\
+\subsubsection{Depth 2 Node} Internal nodes $h_2 \in H(2)$ realize the static container concept associated with compressed edges differently than for the root node. 
+Considering the number of internal nodes, it becomes unfeasible to assign extra set of hash tables for each node that serve as containers for key part chains. \\
 
-To realize the container concept, we exploit the fact that key suffixes for edges in $d=2$ $Node_{2}$ node comprise a single key part.
+To implement the container concept, the design of depth 2 nodes exploits the fact that key suffixes for edges comprise a single key part.
 Hence, we could reuse the space already booked to store the pointers to child nodes (leafs) to hold the suffixed key part.
-For the pointer $ptr_{j}$ associated with the edge $k_{j}$ to serve the purpose of either pointing to a child node or holding an integer value, we make it a tagged pointer (cf. \ref{sec:preliminaries:pointertagging}). \\
+For the pointer $ptr_{j}$ associated with the edge $k_{j}$ to serve the purpose of either pointing to a child node or holding an integer value, we make it a tagged pointer (Sec. \ref{sec:preliminaries:pointertagging}). \\
 
-Consequently, pointers to children that corresponds to edges $k_{j}$ in $Node_{2}$ are denoted by $ptr_{j} = (value, tag)$. Such pointers carry two pieces of information. (1) A $value$ is the actual payload of bits, which can be viewed as either a memory address or a raw integer value depending on the tag value. (2) A $tag$ is the value held in the least significant bits (LSB) indicating whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
+Consequently, pointers to children that corresponds to edges $k_{j}$ in $h_2$ are denoted by $ptr_{j} = (value, tag)$. Such pointers carry two pieces of information. (1) A $value$ is the actual payload of bits, which can be viewed as either a memory address or a raw integer value depending on the tag value. (2) A $tag$ is the value held in the least significant bits (LSB) indicating whether the associated edge $k_{j}$ is compressed or non-compressed. Figure \ref{fig:compressed_depth_2_node} visualizes the structure.
 
 \clearpage
 \begin{figure}
