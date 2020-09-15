@@ -3,10 +3,10 @@
 
 How much data compression does the Hypertrie achieve due to applying the space reduction approach presented earlier? 
 Does the new data structure compromise the overall efficiency, more specifically, the query processing speed? 
-On the one side, this chapter describes the space-friendliness of Hypertrie by presenting the compression ratio achieved w.r.t. the original Hypertrie after the bulk loading with different RDF data sets is done for both Hypertrie variants.  
-On the other side, we have a look at how the space enhanced Tentris can still maintain its proven efficiency. For that, I ran a a series of benchmark experiments on real RDF data and queries. \\
+On the one side, this chapter describes the space-friendliness of Hypertrie by presenting the compression ratio achieved w.r.t. The original Hypertrie after the bulk loading with different RDF data sets is done for both Hypertrie variants.  
+On the other side, we have a look at how the space enhanced Tentris can still maintain its proven efficiency. For that, I ran a series of benchmark experiments on real RDF data and queries. \\
 
-As this work's effort is mainly toward enhancing the Tentris system in the context of space cost, all experiments consider only the original Tentris' Hypertrie as the reference for comparison opting out other triple store systems. The experimental setup is described in section \ref{sec:exper_setup}. In the succeeding section \ref{sec:results}, the results are presented.
+As this work's effort is mainly toward enhancing the Tentris system in the context of space cost, all experiments consider only the original Tentris' hypertrie as the reference for comparison opting out other triple store systems. The experimental setup is described in section \ref{sec:exper_setup}. In the succeeding section \ref{sec:results}, the results are presented.
 
 \section{Experimental Setup}
 \label{sec:exper_setup}
@@ -14,8 +14,8 @@ As this work's effort is mainly toward enhancing the Tentris system in the conte
 \subsection{Data Sets and Queries}
 \label{subsec:datasets}
 
- I used three different RDF data sets to assess the performance  (load time/ size) of the compressed Hypertrie. Concretely, I used Semantic Web Dog Food SWDF (372K triples) as well as the English DBpedia 2015-10 (681 M triples) as real-world data sets. 
-I also chose the 4 WatDiv synthetic data corresponding to scale factors (10, 100, 1000, 10000) \cite{WatDiv}. All the three data sets were used during the size/load speed assessment. However, only SWDF and DBpedia data set were incorporated into the benchmarks.
+ I used three different RDF data sets to assess the performance  (load time/ size) of the compressed Hypertrie. Concretely, I used Semantic Web Dog Food SWDF (372K triples) as well as the English DBpedia 2015-10 (1087 M triples) as real-world data sets. 
+I also chose the 4 WatDiv synthetic data sets corresponding to scale factors (10, 100, 1000, 10000) \cite{WatDiv}. All three data sets were used during the size/load speed assessment. However, only the SWDF and DBpedia data set were incorporated into the benchmarks. As hypertrie currently support BGP-based SPARQL operations, the benchmark queries are limited to \verb|SELECT| queries with \verb|WHERE| and with or without \verb|DISTINCT| keywords. To generate a custom set of benchmark queries for DBpedia and SWDF, the FEASIBLE \cite{feasible} query generator framework was used with suitable configuration. The generated queries are based on real-world query logs contained in LSQ \cite{lsq}.
 
 \begin{table}[tb]
 	\centering
@@ -26,9 +26,6 @@ I also chose the 4 WatDiv synthetic data corresponding to scale factors (10, 100
 		\midrule
 		SWDF & 372\;\;\,k & 32\;\;\,k & 185 & 96\;\;\,k  & real-world\\ % structuredness 0.027901741842416984
 		DBpedia & 681\;M & 40\;M & 63\;k & 178\;M & real-world \\ % structuredness
-		WatDiv & 1\;\,G & 52\;M & 186 & 92\;M & synthetic\\ % structuredness 0.005427051162802224
-		% DBpedia & 681'333'018 & 40'426'431 & 62658 & 178'269'555
-		% WatDiv & 1091468578 & 52120385 & 186 & 92'240'568
 		\bottomrule
 	\end{tabular}
 	\caption{RDF datasets which were used throughout the evaluation phase. Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
@@ -81,6 +78,7 @@ The suite returned the average response time for each query, and the query resul
 
 \section{Results}
 \label{sec:results}
+Table \ref{tab:result_table_size} shows the allocated memory size for Tentris resulted from bulk loading different data sets (Sec. \ref{subsec:datasets}) using compressed and non-compressed versions of hypertrie. From the table, we notice that the \textit{global} space allocated for Tentris that utilizes the compressed hypertrie is reduced four times compared to the original settings. The compression ration of value $CP  \backsimeq 4$ stays stable across all data set except for SWDF where $CP \backsimeq 3$. Additionally, the compression ratio remains intact when WatDiv data sets scales up. Figure \ref{fig:eval_size} visualizes the size results. In the figure, results are normalized by viewing the average size acquired by a triple in the corresponding data set to be store in either version of Tentris. Similarly, table \ref{tab:result_table_load_speed} presents the loading speed of data sets during the bulk loading. From the table, we can infer that using a compressed version of hypertrie to represents the RDF graph in the triple store always results in less loading time (approximately 1.3 times faster) except for the SWDF data set where loading is appr. ten times faster using compressed hypertrie. The average load time by a single triple in a data set is also depicted in figure \ref{fig:eval_speed} calculated in microseconds. Figure \ref{fig:benchmarks_graph} highlights the benchmark results using a logarithmic axis on the query result size dimension. From the results, we can infer a substantial degradation of query processing efficiency when adopting the compressed version of hypertrie. The degradation goes down to half for some queries with moderate query result size (between 10-1000 triple). The performance degradation is more severe with SWDF than with DBpedia.
 
 \begin{table}[h]
 	\setlength{\tabcolsep}{1ex}
@@ -96,7 +94,7 @@ The suite returned the average response time for each query, and the query resul
 		SWDF  & 372397&	71956&	205092	&2.85\\ 
 		\bottomrule
 	\end{tabular}
-	\caption{Results of size calculation. }
+	\caption{The size of the resultant triple store against data sets in \ref{subsec:datasets} when the compressed and non-compressed variants of hypertries are used. All the values are in kilo bytes (kB). CR is abbr. for the compression ratio.}
 	\label{tab:result_table_size}
 \end{table}
 
@@ -114,10 +112,9 @@ The suite returned the average response time for each query, and the query resul
 		SWDF  & 372397&	0.0935& 1.0345\\ 
 		\bottomrule
 	\end{tabular}
-	\caption{Results of load speed calculation. }
+	\caption{Results of load speed calculation.}
 	\label{tab:result_table_load_speed}
 \end{table}
-
 
 \begin{figure}
 	\centering
@@ -137,7 +134,6 @@ The suite returned the average response time for each query, and the query resul
 \clearpage
 
 \begin{figure}[h]
-	\label{fig:benchmarks}
 	\centering
 	\subfloat[SWDF]{%
 		\includegraphics[width=\textwidth]{figures/chapter5/SWDFBenchmarktriangle}
@@ -148,6 +144,7 @@ The suite returned the average response time for each query, and the query resul
 	}
 	
 	\caption{Average Queries per Second (avg QpS) by size of the query result considering the two variants of Hypertrie implementations (compressed, non-compressed). Figure 5.1a shows the results of benchmarking against SWDF dataset and associated queries, while figure 5.1b shows  the results of benchmarking against DBpedia dataset.}
+	\label{fig:benchmarks_graph}
 \end{figure}
 
 \clearpage
