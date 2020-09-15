@@ -1,4 +1,11 @@
 \chapter{Related Work}
 \label{ch:relatedword}
 
-asdasdasd
+The efficiency of in-memory string data structures used for storing and retrieving strings (or other sequence type) is crucially important for applications such as in-memory data store implementation. 
+Trie-based data structures offer rapid access to strings while
+maintaining reasonable worst-case performance. However, they are are space-intensive. Consequently, measures need always to be taken to reduce their space consumption, if they are to remain feasible for maintaining large sets of data. \\
+
+\textit{Burst Trie} has been the most successful procedure for reducing the space of a trie structure \cite{bursttrie}. It selectively collapse chains of trie nodes into small containers of strings that share a common prefix. By that, burst trie reduces the number of trie nodes up to 80\%. When a container has reached its capacity, it is burst into smaller containers that
+are parented by a new trie node. Burst trie uses linked list to chain its nodes. It is concept is based on the burst-sort \cite{burstsort}. \\
+
+HAT-trie \cite{HATTRIE} builds on top of burst trie and establish the idea of chaining tire nodes using hash tables instead of linked list in an attempt to deliver a more cache-conscious in-memory string data structure. \\

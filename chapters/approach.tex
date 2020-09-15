@@ -112,8 +112,6 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $h_2$ ar
 	\label{fig:compressed_depth_2_node}
 \end{figure}
 \clearpage
-\subsection{Node Expansion}
-Node Expansion text. Node Expansion text.Node Expansion text.Node Expansion text.Node Expansion text.
 
 \subsection{Virtual Nodes}
 Due to the fact that some key paths in Hypertrie are collapsed into a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement Hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
@@ -235,7 +233,13 @@ Following that approach will allow us to integrate the new Hypertrie implementat
 Next, I list the main algorithms that realize the core behaviors of Hypertrie when the space reduction approach is applied. The great proportion of my work was on expanding the code base of Hypertrie project to adapt the key path compression approach including the implementation of the accompanying algorithms\footnote{In this section, I list only the main algorithms}.
 
 \subsection{Key Retrieval}
-A basic operation in Hypertrie is to check if a given $key \in N^d$ represents a path from a $Node_{d}$ to a leaf node where $d$ is the node depth\todo{Omit the redefinition of d as I did that earlier}. In other words, if $key$ is a non-zero entry in the tensor $T = h^{-1} (Node_{d})$\todo{Need a definition}. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node. \\
+A basic operation in Hypertrie is to check if a given key $k \in N^d$ represents a path from a hypertrie node $h \in H(d)$ to a leaf node. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node type. \\
+
+\paragraph{depth 3 Node}
+
+\paragraph{depth 2 Node}
+
+\paragraph{depth 1 Node}
 
 \begin{algorithm}
 	\DontPrintSemicolon
