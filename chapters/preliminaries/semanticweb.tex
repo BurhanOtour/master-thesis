@@ -21,23 +21,28 @@ Let $I$ be the set of \textit{IRIs}, $L$ be the set of \textit{literals} and be 
 \subsubsection{RDF Triple, RDF Graph}
 \label{sec:rdf_triples}
 On an abstract level, an RDF triple can be seen as a statement that describes the relationship between two resources. An RDF triple can also serve to describe the property of a resource. RDF triple is represented by a sentence composed of three elements in order: \textit{a subject}, \textit{a predicate} and \textit{an object}.
-The subject is a RDF resource. The subject has a property defined by the predicate and a value for that property set by the object.
-RDF restricts which RDF terms can be used for subject, predicate and object:
+The subject is an RDF resource. The subject has a property defined by the predicate and a value for that property set by the object.
+RDF restricts which RDF terms can be used for subject, predicate, and object:
 
 \begin{definition}[RDF Triple, RDF Graph]
-An RDF Triple is a triple $(s, p, o) \in ( I \cup B ) \times I \times RT$ where $s$ is called subject, $p$ is called predicate and $o$ is called object. \\
+An RDF Triple is a tuple $(s, p, o) \in  $ where $s$ is called subject, $p$ is called predicate and $o$ is called object. \\
 A set of of RDF Triples is called RDF graph.
 \end{definition}
 
 \begin{example}
 	An example of an RDF graph is given in Table \ref{tab:rdf_graph_example}. 
-	The data in the graph presents a list of pioneers along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
+	The data in the graph presents a list of pioneers, along with their occupations and spouses. Table \ref{tab:rdf_graph_abbr} defines the abbreviations used in the example. \\
 \end{example}
 
-We use a special language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{Hitzler} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. \\
+We use a particular query language to retrieve data from an RDF graph called SPARQL. SPARQL \cite{Hitzler} is a recursive acronym for “SPARQL Protocol And RDF Query Language”. Listing \ref{lst:sparqlexample} shows a simple example of a SPARQL query against the RDF graph in table \ref{tab:rdf_graph_example}. The SPARQL language semantic is built on top of a formal language called SPARQL-algebra \cite{Hitzler}. A core aspect of SRARQL-algebra is a sub-language called SPARQL-BGP (Basic Graph Pattern). \\
 
-Listing \ref{lst:sparqlexample} shows a simple example of a SPARQL query
-against the RDF graph in table \ref{tab:rdf_graph_example}. \\
+\begin{definition}[Triple Pattern, Basic Graph Pattern]
+Let $V$ be an infinite set of variables disjoint to the set of RDF terms $RT$. The triple $(s, p, o) \in ( I \cup B \cup V) \times (I \cup V) \times (RT \cup V)$ is called \textit{triple pattern (TP)}. A set of triple patterns is called \textit{basic graph pattern (BGP)}.
+\end{definition}
+
+\verb|<?person ex:occupation ex:Doctor>| is a triple pattern with a variable \verb|?person| placed in the subject position. Applying a triple pattern $tp$ to an RDF graph $g$ (denoted by $P(g)$) finds all RDF triples where the predicate equals \verb|ex:occupation| and object equals \verb|ex:Doctor|. For each triple's occurrence, a mapping from \verb|?person| to the corresponding subject of the triple is created. As a result, we end up with a set of mappings to variable \verb|?person|. We call this set, the \textit{solution mappings} denoted with $\Omega$.  Two solution mappings are said to be \textit{compatible} when values assigned to the common variables are identical. Applying BGP on $g$ is done by finding compatible solution mappings resulted from its triple patterns. \\
+
+In SPARQL, raw \verb|SELECT| operation is primarily based on evaluating basic graph patterns using the \verb|join| operator defined in SPARQL algebra in the context of finding compatible solution mappings \cite{Hitzler}.
 
 \begin{table}[h]
 	\centering
@@ -60,7 +65,6 @@ against the RDF graph in table \ref{tab:rdf_graph_example}. \\
 	\caption{An example of an RDF graph.}
 	\label{tab:rdf_graph_example}
 \end{table}
-
 
 \begin{table}[h]
 	\centering
@@ -86,11 +90,11 @@ WHERE {
 \end{lstlisting}
  
  \subsubsection{Triple Stores}
- \textit{Triple Stores} are a special kind of data management systems designed to store RDF triple data. 
+ \textit{Triple Stores} are a special kind of data management system designed to store RDF triple data. 
  It can store one or more RDF graphs. 
  Generally, triple stores provide a standard interface to enable performing queries and other semantic operations on the stored RDF triples using a query language such as SPARQL (Sec. \ref{sec:rdf_triples}).
  Triple stores usually expose HTTP-based SPARQL endpoints for querying enablement. 
  A triple store client can send a SPARQL query embedded in an HTTP request to the endpoint.
- The store evaluates the query against the RDF data it holds and return the results to the client in the body of an HTTP response in a format conforms to the system configuration.
+ The store evaluates the query against the RDF data it holds and returns the results to the client in the body of an HTTP response in a format conforms to the system configuration.
  
 \clearpage
