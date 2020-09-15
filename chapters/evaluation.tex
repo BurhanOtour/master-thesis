@@ -82,6 +82,59 @@ The suite returned the average response time for each query, and the query resul
 \section{Results}
 \label{sec:results}
 
+
+\begin{table}[h]
+	\setlength{\tabcolsep}{1ex}
+	\begin{tabular}{lrrrrrl}
+		\toprule
+		Data set& \# tripls & size (kB) (Compressed) &size (kB) (non-Compressed)& CR\\
+		\midrule
+		WatDiv (scale=10) &  1097093& 	107148	& 422744& 	3.945 \\ % structuredness 0.027901741842416984
+		WatDiv (scale=100) & 10985185&	1032960	&4191216&	4.057  \\ % structuredness
+		WatDiv (scale=1000) & 109911677	&10289024&	41760552&	4.059 \\ 
+		WatDiv (scale=10000) & 1098338594&	104048444	&413277780&	3.972\\ 
+		DBpedia  & 1087348475	&97680540&	361838396&	3.704&\\ 
+		SWDF  & 372397&	71956&	205092	&2.85\\ 
+		\bottomrule
+	\end{tabular}
+	\caption{RDF datasets which were used throughout the evaluation phase. Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\label{tab:result_table_size}
+\end{table}
+
+\begin{table}[h]
+	\setlength{\tabcolsep}{1ex}
+	\begin{tabular}{lrrrrl}
+		\toprule
+		Data set& \# tripls & load time (sec) (Compressed) & load time (sec) (non-Compressed) \\
+		\midrule
+		WatDiv (scale=10) &  1097093& 	2.0702	& 3.0998 \\ % structuredness 0.027901741842416984
+		WatDiv (scale=100) & 10985185&	33.0395	& 47.0945  \\ % structuredness
+		WatDiv (scale=1000) & 109911677	&421.0285	& 553.088 \\ 
+		WatDiv (scale=10000)& 1098338594 & 4948.0489	& 8316.0049\\ 
+		DBpedia  & 1087348475	&4032,0386& 	6181,0737\\ 
+		SWDF  & 372397&	0.0935& 1.0345\\ 
+		\bottomrule
+	\end{tabular}
+	\caption{RDF datasets which were used throughout the evaluation phase. Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\label{tab:result_table_load_speed}
+\end{table}
+
+
+\begin{figure}
+	\centering
+	%\vspace{0.3in}
+	\includegraphics[width=\textwidth]{figures/chapter5/size}
+	\caption{The bar chart shows the average size (in kB) acquired by a single triple for each data set when it is stored in either variants of Hypertrie.}
+	\label{fig:eval_size}
+\end{figure}
+
+\begin{figure}
+	\centering
+	%\vspace{0.3in}
+	\includegraphics[width=\textwidth]{figures/chapter5/loadspeed}
+	\caption{The average load time (in $\mu $s) of an RDF triple calculated during the bulk loading experiment.}
+	\label{fig:eval_speed}
+\end{figure}
 \clearpage
 
 \begin{figure}[h]
@@ -97,4 +150,5 @@ The suite returned the average response time for each query, and the query resul
 	
 	\caption{Average Queries per Second (avg QpS) by size of the query result considering the two variants of Hypertrie implementations (compressed, non-compressed). Figure 5.1a shows the results of benchmarking against SWDF dataset and associated queries, while figure 5.1b shows  the results of benchmarking against DBpedia dataset.}
 \end{figure}
+
 \clearpage

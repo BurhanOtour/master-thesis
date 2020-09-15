@@ -1,11 +1,14 @@
 \chapter{Related Work}
 \label{ch:relatedword}
 
-The efficiency of in-memory string data structures used for storing and retrieving strings (or other sequence type) is crucially important for applications such as in-memory data store implementation. 
+The efficiency of in-memory data structures used for storing and retrieving strings (or other sequence types) is crucially essential for applications such as in-memory data store implementation. 
 Trie-based data structures offer rapid access to strings while
-maintaining reasonable worst-case performance. However, they are are space-intensive. Consequently, measures need always to be taken to reduce their space consumption, if they are to remain feasible for maintaining large sets of data. \\
+maintaining good worst-case performance. However, they are space-intensive. Consequently, measures need always to be taken to reduce their space consumption if they are to remain feasible for maintaining large sets of sequences. \\
 
-\textit{Burst Trie} has been the most successful procedure for reducing the space of a trie structure \cite{bursttrie}. It selectively collapse chains of trie nodes into small containers of strings that share a common prefix. By that, burst trie reduces the number of trie nodes up to 80\%. When a container has reached its capacity, it is burst into smaller containers that
-are parented by a new trie node. Burst trie uses linked list to chain its nodes. It is concept is based on the burst-sort \cite{burstsort}. \\
+\textit{Burst Trie} has been the most successful procedure for reducing the space of a trie structure \cite{bursttrie}. It selectively collapses chains of trie nodes into small containers of strings that share a common prefix. By that, burst trie reduces the number of trie nodes up to 80\%. When a container has reached its capacity, it is burst into smaller containers parented by a new trie node. Burst trie uses a linked list to chain its nodes. Its concept is based on the burst-sort \cite{burstsort}. \\
 
-HAT-trie \cite{HATTRIE} builds on top of burst trie and establish the idea of chaining tire nodes using hash tables instead of linked list in an attempt to deliver a more cache-conscious in-memory string data structure. \\
+HAT-trie \cite{HATTRIE} builds on top of burst trie and establishes the idea of chaining tire nodes using hash tables instead of a linked list in an attempt to deliver a more cache-conscious in-memory string data structure. \\
+
+Adaptive Radix Tree (ART) \cite{ART} presents a novel, efficient and space-friendly trie-based data structure. In their work \cite{ART}, ART introduces the concept of adaptive nodes. Depending on the size of data held by the node, local representation is assigned for each node from a pre-defined set of inner node data structures. \\
+
+PATRICIA \cite{PATRICIA} is an approach to minimize the amount of memory space consumed by tries holding long sequences of strings. \\	
