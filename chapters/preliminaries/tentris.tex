@@ -207,14 +207,14 @@ Figure \ref{fig:rdf_hypertrie} shows a hypertrie storing the RDF triples shown i
 \begin{sidewaysfigure}[h]
 		\centering
 		\includegraphics[scale=0.78]{figures/chapter2/hypertrie4}
-		\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+		\caption{Hypertrie representation of the tensor $T_g$ in figure \ref{fig:rdf_tensor}. Each hypertrie node represents a tensor slice using the slice key presented in bold on the original tensor. Each node except for the leafs contain an array of hash tables each represents the set of edges at the corresponding key positions for the represented tensor. Scalar tensor nodes (leaf nodes) are printed as a set of key parts. The first reference to a child node is printed with a solid arrow, all further references are printed with a dashed arrow.}
 		\label{fig:rdf_hypertrie}
 \end{sidewaysfigure}
 
 \begin{figure}[h]
 	\centering
 	\includegraphics{figures/chapter2/hypertrie4_slices}
-	\caption{Slice.}
+	\caption{Slicing a hypertrie using a tensor slice key can be done simply by following the path from the root node using the fixed key parts in the key in any combination at the corresponding positions. Nodes (a) and (c) are leaf nodes representing slicing an RDF tensor by a single slicing position. (b) is in an inner node that represents a 2D tensor slice.}
 	\label{fig:rdf_hypertrie_slice}
 \end{figure}
 \clearpage
