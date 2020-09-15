@@ -46,11 +46,9 @@ Consequently, all pointer values share the fact that the first three low signifi
 
 As a use case, depending on the tag, pointer tagging allows a dynamic representation of the numeric value held by the pointer. Thus, the actual payload of the pointer could represents a memory address for some time during the process execution but can later express the binary representation of a \texttt{char} value for example, depending on the execution context and after a change in the tag value during run-time. \\
 
-\subsection{Tagged Pointer Implementation}
+\paragraph{Tagged Pointer Implementation}
 
-An approach to implement a tagged pointer is to develop a wrapper object around a pointer type variable. By that, we insure safety by presenting a single point of failure in case of pointer value misuse. The wrapper can be equipped with adequate behaviours that govern the tag/ payload manipulation and retrieval. \\
-
-Accessing the binary representation of pointer to enable pointer tagging is straightforward in most programming languages and is done by using bit-wise operations. \\
+An approach to implement a tagged pointer is to develop a wrapper object around a pointer type variable. By that, we insure safety by presenting a single point of failure in case of pointer value misuse. The wrapper can be equipped with adequate behaviours that govern the tag/ payload manipulation and retrieval. Accessing the binary representation of pointer to enable pointer tagging is straightforward in most programming languages and is done by using bit-wise operations. \\
 
 
 \clearpage

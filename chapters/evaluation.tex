@@ -6,7 +6,7 @@ Does the new data structure compromise the overall efficiency, more specifically
 On the one side, this chapter describes the space-friendliness of Hypertrie by presenting the compression ratio achieved w.r.t. the original Hypertrie after the bulk loading with different RDF data sets is done for both Hypertrie variants.  
 On the other side, we have a look at how the space enhanced Tentris can still maintain its proven efficiency. For that, I ran a a series of benchmark experiments on real RDF data and queries. \\
 
-As this work's effort is mainly toward enhancing the Tentris system in the context of space cost, all the experiments consider only the original Tentris' Hypertrie as the reference for comparison opting out other triple store systems. The experimental setup is described in section \ref{sec:exper_setup}. In the succeeding section \ref{sec:results}, the results are presented.
+As this work's effort is mainly toward enhancing the Tentris system in the context of space cost, all experiments consider only the original Tentris' Hypertrie as the reference for comparison opting out other triple store systems. The experimental setup is described in section \ref{sec:exper_setup}. In the succeeding section \ref{sec:results}, the results are presented.
 
 \section{Experimental Setup}
 \label{sec:exper_setup}
@@ -15,7 +15,7 @@ As this work's effort is mainly toward enhancing the Tentris system in the conte
 \label{subsec:datasets}
 
  I used three different RDF data sets to assess the performance  (load time/ size) of the compressed Hypertrie. Concretely, I used Semantic Web Dog Food SWDF (372K triples) as well as the English DBpedia 2015-10 (681 M triples) as real-world data sets. 
-I also chose the 1 billion-triple synthetic data set from WatDiv \cite{WatDiv} (see Table \ref{tab:datasets_status}). All the three data sets were used during the size/load speed assessment. However, only SWDF and DBpedia data set were incorporated into the benchmarks.
+I also chose the 4 WatDiv synthetic data corresponding to scale factors (10, 100, 1000, 10000) \cite{WatDiv}. All the three data sets were used during the size/load speed assessment. However, only SWDF and DBpedia data set were incorporated into the benchmarks.
 
 \begin{table}[tb]
 	\centering
@@ -82,7 +82,6 @@ The suite returned the average response time for each query, and the query resul
 \section{Results}
 \label{sec:results}
 
-
 \begin{table}[h]
 	\setlength{\tabcolsep}{1ex}
 	\begin{tabular}{lrrrrrl}
@@ -97,7 +96,7 @@ The suite returned the average response time for each query, and the query resul
 		SWDF  & 372397&	71956&	205092	&2.85\\ 
 		\bottomrule
 	\end{tabular}
-	\caption{RDF datasets which were used throughout the evaluation phase. Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\caption{Results of size calculation. }
 	\label{tab:result_table_size}
 \end{table}
 
@@ -115,7 +114,7 @@ The suite returned the average response time for each query, and the query resul
 		SWDF  & 372397&	0.0935& 1.0345\\ 
 		\bottomrule
 	\end{tabular}
-	\caption{RDF datasets which were used throughout the evaluation phase. Numbers of distinct triples (T), subjects (S), predicates (P) and objects (O) of each dataset. Additionally, Type classifies the datasets as real-world or synthetic. }
+	\caption{Results of load speed calculation. }
 	\label{tab:result_table_load_speed}
 \end{table}
 
