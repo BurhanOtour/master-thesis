@@ -1,33 +1,33 @@
 \chapter{Space Reduction Approach}
 \label{ch:approach}
 
-In this chapter, I discuss the adopted approach to substantially mitigates the space inefficiency of Hypertrie.  
+In this chapter, I discuss the adopted approach to substantially mitigates the space inefficiency of hypertrie.  
 The technique relies mainly on compressing a Hypertire path with specific characteristics. 
-Worth mentioning that the approach does not neglect the other attempts already realized to minimize Hypertrie's memory footprint. 
-In contrast, it could be considered an added feature that further contributes to the space reduction of the overall Hypertrie data structure. \\
+Worth mentioning that the approach does not neglect the other attempts already realized to minimize hypertrie's memory footprint. 
+In contrast, it could be considered an added feature that further contributes to the space reduction of the overall hypertrie data structure. \\
 
-This part of the work delivers motivation to the approach. Afterward, an illustration of the new Hypertrie internal nodes' design needed to realize the solution is delivered. The chapter ends with a presentation of the cor algorithms that define the behaviors of the newly designed Hypertrie. 
+This part of the work delivers motivation to the approach. Afterward, an illustration of the new hypertrie internal nodes' design needed to realize the solution is delivered. The chapter ends with a presentation of the cor algorithms that define the behaviors of the newly designed hypertrie. 
 
 
 \section{Hypertrie Memory Utilization}
 \label{sec:hypertrie_memory_utilization}
-Despite its operational efficiency, Hypertrie performance comes not without a trade-off. 
-Since Hypertrie is a special kind of a Trie data structure, it inherits some of the fundamental problems of  Tries. 
+Despite its operational efficiency, hypertrie performance comes not without a trade-off. 
+Since hypertrie is a special kind of a Trie data structure, it inherits some of the fundamental problems of  Tries. 
 One of these problems is the excessive space utilization in a worst-case scenario \cite{Brass:2008:ADS:1434862}.  \\
 
-The current design and implementation of Hypertrie \cite{tentris2020}, however, mitigates the space inefficiency characteristic in two ways. 
+The current design and implementation of hypertrie \cite{tentris2020}, however, mitigates the space inefficiency characteristic in two ways. 
 First, each partial function $c^{(h)}_i$ (Def. \ref{def:bht}) in each hypertrie node $h$ is realized using a custom sparse hash table $HT$ instead of arrays or linked lists to store the key parts. 
-By using hash table, Hypertrie's nodes only stores keys that form prefixes to already existed paths. 
+By using hash table, hypertrie nodes only stores keys that form prefixes to already existed paths. 
 In contrast, arrays utilization in normal Tries considers the whole alphabet set in each node with many array entries store pointers that refer to null (Sec. \ref{sec:trie}).  \\
 
-The adoption of hash tables in Hypertrie also delivers extra performance as looking up keys is nearly constant compared to linked list search where it has a linear computational complexity $O(n)$. 
+The adoption of hash tables in hypertrie also delivers extra performance as looking up keys is nearly constant compared to linked list search where it has a linear computational complexity $O(n)$. 
 The other attempt to reduce the overall space requirement is to store equal nodes (Sub-hypertrie) only once by making use of the associativity characteristic of the slicing operations in tensors (Sec. \ref{sec:tensor_algebra}). That is, hypertrie takes advantage of that fact that the slicing order relative to the root node has no influence when slices are chained. Example: $T[k_0, k_1, ....] = (T[k_0, :, ....])[k_1, ....] = (T[:, k_1, ....])[k_0, ....].$ \\
 
 By exploiting the equivalent slicing concept and store equal sub-hypertrie nodes only once, it is proved that the upper storage bound of hypertrie $h \in H(d)$ is $\vartheta(2^{d-1}. d . z(h))$, where $z(h)$ is the number of non-zero entries \cite{tentris2020}. Since, hypertrie realizes an RDF tensor, then $d=3$. Thus, the upper storage bound is $\vartheta(12 . z(h))$.
 \vspace{0.5cm}
 
 \section{Space Reduction Solution}
-Despite the previously mentioned attempts to minimize the size of Hypertrie (Sec. \ref{sec:hypertrie_memory_utilization}), the excessive memory utilization is still a bottleneck. The case can be witnessed in practice when the set of RDF triples needed to be indexed by hypertrie increases in size with less overlapping between its triples. As a result, a set of nodes, including the root node, will store edges to children with single entry for a particular dimension. Nevertheless, we still need to utilize a space to host a pointer to that child node. This results in a space redundancy issue \cite{PATRICIA}. 
+Despite the previously mentioned attempts to minimize the size of hypertrie (Sec. \ref{sec:hypertrie_memory_utilization}), the excessive memory utilization is still a bottleneck. The case can be witnessed in practice when the set of RDF triples needed to be indexed by hypertrie increases in size with less overlapping between its triples. As a result, a set of nodes, including the root node, will store edges to children with single entry for a particular dimension. Nevertheless, we still need to utilize a space to host a pointer to that child node. This results in a space redundancy issue \cite{PATRICIA}. 
 
 \begin{example}
 \label{ex:space_problem}
@@ -56,10 +56,10 @@ As a result, the tree height is cut down, and a substantial amount of memory is 
 
 \section{Compressed Hypertrie Nodes}
 \label{sec:compressed_nodes_representation}
-In order to achieve path compression in Hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix.
-As the size of key suffixes varies depending on the depth of the parent node, each group of Hypertrie nodes at certain depth will have their own internal node representation. In details, each hypertrie node of depth $d$ should realize a \textit{container} concept of size $d-1$ for every compressed path stored in it. On the other hand, compressed hypertrie nodes should be \textit{adaptive} to change. As the hypertrie state changes, for example by adding a new key, holding a compressed key path at certain edge may no longer be valid. The node at that particular edge mush be branched down to child nodes. \\
+In order to achieve path compression in hypertrie, fundamental design changes need to take place. By that, we can enable the node to store the entire key suffix.
+As the size of key suffixes varies depending on the depth of the parent node, each group of hypertrie nodes at certain depth will have their own internal node representation. In details, each hypertrie node of depth $d$ should realize a \textit{container} concept of size $d-1$ for every compressed path stored in it. On the other hand, compressed hypertrie nodes should be \textit{adaptive} to change. As the hypertrie state changes, for example by adding a new key, holding a compressed key path at certain edge may no longer be valid. The node at that particular edge mush be branched down to child nodes. \\
 
-From programming point of view, the redesign of Hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming features, we could separate the compressed nodes realization from the Hypertrie data structure interface. By that, we can still insure a smooth integrity of Hypertrie with other components in Tentris system. In this section, I delve into the internal design of each type of compressed hypertrie nodes and discuss the concept of virtual node that enable slicing in the compressed mode. \\
+From programming point of view, the redesign of hypertrie nodes' structures is low level. Thanks to C++17 template meta-programming features, we could separate the compressed nodes realization from the hypertrie data structure interface. By that, we can still insure a smooth integrity of hypertrie with other components in Tentris system. In this section, I delve into the internal design of each type of compressed hypertrie nodes and discuss the concept of virtual node that enable slicing in the compressed mode. \\
 \begin{remark}
 The following sections make use of all the terminologies, definitions, and conventions defined in section \ref{sec:preliminaries:tentris} that refer to various aspects of tensors and trie (including hypertrie).
 \end{remark}
@@ -72,9 +72,9 @@ The following sections make use of all the terminologies, definitions, and conve
 \subsection{Internal Node Representations}
 \label{ch:approach_node_structure}
 This section summarizes the design decision of compressed hypertrie nodes. A major step to implement the path compression approach is to the container concept for each node type\footnote{Leaf nodes are not considered.} (Sec. \ref{sec:compressed_nodes_representation}).
-As a result, each inner node should still be able to expand at certain edges to sub Hypertrie nodes while maintaining a compressed key path stored in containers bounded to other edges (compressed edges). \\
+As a result, each inner node should still be able to expand at certain edges to sub hypertrie nodes while maintaining a compressed key path stored in containers bounded to other edges (compressed edges). \\
 
-The compressed key path container implementation varies depending on the node depth. Since Hypertrie's internal nodes can be either a root node or depth two nodes, we can distinguish two variants of internal node representations: \\
+The compressed key path container implementation varies depending on the node depth. Since hypertrie's internal nodes can be either a root node or depth two nodes, we can distinguish two variants of internal node representations: \\
 
 \subsubsection{Depth 3 Node (root node)} 
 %As the Hypertrie has a predefined fixed depth $d = 3 $, There exists a single root node. 
@@ -100,7 +100,7 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $h_2$ ar
 	\centering
 	\vspace{-0.3in}
 	\includegraphics{figures/chapter4/depth3}
-	\caption{Depth 3 Node}
+	\caption{The structure of depth 3 node in compressed hypertrie}
 	\label{fig:compressed_depth_3_node}
 \end{figure}
 
@@ -108,28 +108,28 @@ Consequently, pointers to children that corresponds to edges $k_{j}$ in $h_2$ ar
 	\centering
 	\vspace{-1in}
 	\includegraphics{figures/chapter4/depth2}
-	\caption{Depth 2 Node}
+	\caption{The structure of depth 2 node in compressed hypertrie}
 	\label{fig:compressed_depth_2_node}
 \end{figure}
 \clearpage
 
 \subsection{Virtual Nodes}
-Due to the fact that some key paths in Hypertrie are collapsed into a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement Hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
+Since some key paths in hypertrie are collapsed into a single node of depth $d$, we still need to maintain the concept that collapsed path still represents a tensor of the order $d-1$ with a single entry that evaluates to 1. Maintaining the concept becomes very important when we implement hypertrie programmatically. In particular, when we want to perform slicing in the position of the collapsed path. \\
 
-A straight forward solution is to return the container representation of the collapsed path (array, int value) from the slicing call. However, that contradicts with slicing function contract defined in the Hypertrie interface which states that slicing always return a child node. Also, following this approach will add extra code complexity in the context of handling the different types of returned values from slicing. It will also force us to define a different behavior for each returned type from slicing resulting in substantial amount of code redundancy.  \\
+A straight forward solution is to return the container representation of the collapsed path (array, int value) from the slicing call. However, that contradicts the slicing function contract defined in the hypertrie interface, which states that slicing always returns a child node. Also, following this approach will add extra code complexity in handling the different types of returned values from slicing. It will also force us to define different behavior for each returned type from slicing resulting in a substantial code redundancy.  \\
 
-A clean solution is to encapsulate the defined key path containers in a special type of Hypertrie nodes. 
-Those nodes realize all the methods defined in the Hypertrie interface. 
+A clean solution is to encapsulate the defined key path containers in a special type of hypertrie nodes. 
+Those nodes realize all the methods defined in the hypertrie interface. 
 As a result, we treat slicing operations uniformally. 
-I call these wrappers \textbf{virtual nodes} to discriminate them from the actual Hypertrie nodes which I call \textbf{concrete nodes}. \\
+I call these wrappers \textit{virtual nodes} to discriminate them from the actual hypertrie nodes, which I call \textit{concrete nodes}. \\
 
-Back to the previous sub section \ref{ch:approach_node_structure}, I defined two types of key chain static containers. 
+Back to the previous section \ref{ch:approach_node_structure}, I defined two types of key chain static containers. 
 Concretely, a static array of length 2 representing the key suffix of compressed edges in the root node. 
 A tagged pointer that bounds the key suffix (a single key part) of compressed edges in internal depth 2 nodes. 
 Hence, we now have two variants of nodes for each depth (except for the root node). Concrete nodes and virtual nodes. \\
 
-In the original Hypertrie implementation, slicing method gives enough information about the child node being returned from its execution as shown in listing \ref{lst:slicing_original_hypertrie}. 
-As we conceptually expanded the set of Hypertrie nodes to include virtual nodes, the pointer to a child node of a certain depth returned from a slicing must carry information about the nature of the node being concrete or virtual.
+In the original hypertrie implementation, the slicing method gives enough information about the child node being returned from its execution, as shown in listing \ref{lst:slicing_original_hypertrie}. 
+As we conceptually expanded the set of hypertrie nodes to include virtual nodes, the pointer to a child node of a certain depth returned from a slicing must carry information about the nature of the node being concrete or virtual.
 
 \begin{lstlisting}[caption={Slicing method signituar defined for node where d = $depth$ in original Hypertrie},label={lst:slicing_original_hypertrie},language=C++]
 #include <array>
@@ -148,8 +148,8 @@ class hypertrie_node {
 }
 \end{lstlisting} 
 
-To accomplish this, we again use tagged pointers. This time, the pointer holds only a memory address of type \texttt{void *}. However, the tag here is used to distinguish between the referenced node being concrete or virtual. Accordingly, we can cast the the pointer value to the appropriate type based on the tag value. 
-It becomes the responsibility of the slicing method to create and return that pointer properly. Listing \ref{lst:node_tagged_pointer} shows the structure of the tagged pointer I developed to reference different node types in our space-friendly Hypertrie. 
+To accomplish this, we again use tagged pointers. This time, the pointer holds only a memory address of type \verb|void *|. However, the tag here is used to distinguish between the referenced node being concrete or virtual. Accordingly, we can cast the pointer value to the appropriate type based on the tag value. 
+It becomes the responsibility of the slicing method to create and return that pointer properly. Listing \ref{lst:node_tagged_pointer} shows the structure of the tagged pointer developed to reference different node types in the compressed hypertrie. Listing \ref{lst:slicing_compressed_hypertrie} shows the contract of slice method in compressed hypertrie with the concept of virtual node applied.
 
 \begin{lstlisting}[caption={Node pointer structure},label={lst:node_tagged_pointer},language=C++]
 
@@ -200,8 +200,8 @@ class NodePointer {
         }
 }
 \end{lstlisting} 
-
-\begin{lstlisting}[caption={Slicing method signituar defined for node where d = $depth$ in the space-friendly Hypertrie},label={lst:slicing_original_hypertrie},language=C++]
+\clearpage
+\begin{lstlisting}[caption={Slicing method signituar defined for node where d = $depth$ in the space-friendly Hypertrie},label={lst:slicing_compressed_hypertrie},language=C++]
 #include <array>
 
 template<int depth, bool virtual>
@@ -225,15 +225,15 @@ class hypertrie_node {
 
 
 \section{Algorithms}
-The change in the internal nodes representations in the compressed version of Hypertrie leads to change in how we define its behavior. 
+The change in the internal nodes representations in the compressed version of hypertrie leads to change in how we define its behavior. 
 Hence, the new realization add the logic necessary to consider the compressed paths containers. 
-At the same time, the logic has to have the same contract defined in the original Hypertrie interface. 
-Following that approach will allow us to integrate the new Hypertrie implementation into the Tentris system efficiently. \\
+At the same time, the logic has to have the same contract defined in the original hypertrie interface. 
+Following that approach will allow us to integrate the new hypertrie implementation into the Tentris system efficiently. \\
 
-Next, I list the main algorithms that realize the core behaviors of Hypertrie when the space reduction approach is applied. The great proportion of my work was on expanding the code base of Hypertrie project to adapt the key path compression approach including the implementation of the accompanying algorithms\footnote{In this section, I list only the main algorithms}.
+Next, I list the main algorithms that realize the core behaviors of hypertrie when the space reduction approach is applied. The great proportion of my work was on expanding the code base of hypertrie project to adapt the key path compression approach including the implementation of the accompanying algorithms\footnote{In this section, I list only the main algorithms}.
 
 \subsection{Key Retrieval}
-A basic operation in Hypertrie is to check if a given key $k \in N^d$ represents a path from a hypertrie node $h \in H(d)$ to a leaf node. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node type. \\
+A basic operation in hypertrie is to check if a given key $k \in N^d$ represents a path from a hypertrie node $h \in H(d)$ to a leaf node. Due to the presence of key path containers in internal nodes, the logic should be expanded to consider the children paths of both the compressed and non-compressed edges in each node type. \\
 
 \paragraph{depth 3 Node} Algorithm \ref{algo:key_retrieval_depth3} shows the steps to fetch a given $key$ from depth 3 nodes. In line 1, we calculate the position $p_{min}$ with the minimum edge set size. The algorithm then extracts the key part from the key in the same position in line 4. As there are two types of edge sets for each position, compressed and non-compressed, we first check if there exists a compressed edge at position $p_{min}$ with the key part $k_i$ (line 6). Otherwise, we check the existence of $k_i$ as a non-compressed edge (line 23). If $k_i$ represents a compressed edge in the root node, the corresponding compressed path container $arr_i$ is evaluated by checking if its elements equal the remaining key parts left in $key$ after fetching the $k_i$ (lines 7-20). If the rest of the $key$ equals the $arr_i$, then $key$ represents a path in hypertrie. Thus the algorithm return \verb|true| without the need to check other hypertrie nodes. Otherwise, if $k_i$ represents a non-compressed edge, we subtract the key part $k_i$ from the $key$ and pass in the remaining key $subkey$ recursively to the key retrieval algorithm for nodes of depth 2 (line 23-36). If $k_i$ is neither a compressed or non-compressed edge at position $p_{min}$ the algorithm returns \verb|false|.
 
@@ -246,7 +246,7 @@ A basic operation in Hypertrie is to check if a given key $k \in N^d$ represents
 	\DontPrintSemicolon
 	\SetAlgoLined
 	\KwIn{$node3$: a depth 3 node, $depth$: current node depth, $key$: array of key parts $k_{i} \in K_{i}$ of size 3}
-	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\KwOut{a boolean if a key represents a path in hypertrie}
 	\SetKwFunction{KwFn}{node3\_key\_retrieval}
     \KwFn{node3, depth, key} \;
     \Begin{
@@ -301,7 +301,7 @@ A basic operation in Hypertrie is to check if a given key $k \in N^d$ represents
 	\KwIn{$node2$: a depth 2 node\\
 		$depth$: current node depth\\
 		$key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
-	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\KwOut{a boolean if a key represents a path in hypertrie}
 	\SetKwFunction{KwFn}{node2\_key\_retrieval}
 	\KwFn{node2, depth, key} \;
 	\Begin{
@@ -330,7 +330,7 @@ A basic operation in Hypertrie is to check if a given key $k \in N^d$ represents
 	\KwIn{$node1$: a depth 1 node\\
 		$depth$: current node depth\\
 		$key$: array of key parts $k_{i} \in K_{i}$ of size 2 representing a sub key}
-	\KwOut{a boolean if a key represents a path in Hypertrie}
+	\KwOut{a boolean if a key represents a path in hypertrie}
 	\SetKwFunction{KwFn}{node1\_key\_retrieval}
 	\KwFn{node1, depth, key} \;
 	\Begin{

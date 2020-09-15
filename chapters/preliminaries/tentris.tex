@@ -113,7 +113,7 @@ Since $T_g$ has the codomain $\mathbb{B}$, we describe $T_g$ as a \textit{boolea
 
 \begin{example}
 \label{ex:rdf_tensor}
-Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_7 \times N_7 \times N_7}$. 
+Figure \ref{fig:rdf_tensor} shows a 3D visualization of 3-dimensional tensor that represents the RDF graph $g$ depicted in table \ref{tab:rdf_tensor}. We notice that the number of distinct RDF terms in $g$ is 7, so we can represent $g$ with a tensor $T_g \in \mathbb{B}^{N_8 \times N_8 \times N_8}$. 
 \end{example}
 
 \begin{table}[h]
@@ -159,7 +159,7 @@ the result that matched with non-zero entries of the other operands only. Otherw
 
 \subsection{Tentris and Hypertrie}
 \label{sec:hypertrie}
-Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structur, I first clarify how tensors storing RDF graphs can be represented as tries.\\
+Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called hypertrie. Before I discuss hypertrie structur, I first clarify how tensors storing RDF graphs can be represented as tries.\\
 
 \subsubsection{Trie}
 \label{sec:trie}
@@ -189,7 +189,7 @@ In this writing context, the term \textit{node depth} corresponds to the length 
 \label{sec:hypertrie_pre}
 In the previous section we defined a trie as a data strucuture for realizing an order-3 RDF tensor. The structure is memory-efficient as it sparsely encodes a Boolean-valued tensor by storing only the keys that map to 1. As keys with the same key prefixes share the same node, a moderate level of compression is achieved. Slicing is also efficient if the set of edges to children are represented using a well-designed hashtable or search tree \cite{Brass:2008:ADS:1434862}. \\
 
-A trie, as defined earlier, however, still lake the ability for flexible slicing, that is by any combination of dimensions. The trie tensor as it is defined so far allows slicing positions to only suffix the slice keys, thus using $s = <:, 3, :>$ as a slice key is not possible. Felxible slicing must always be maintained to enable resolving triple patterns (Sec. \ref{sec:rdf_tensor}). Tentris uses \textit{Hypertrie}, a novel trie-based data structure, for holding the keys of an RDF tensor. Hypertrie generalize the normal trie tensor concept by enabling the efficient slicing by any combination of dimensions. Hypertrie is defined formally based on Tentris paper \cite{tentris2020} in the following:\\
+A trie, as defined earlier, however, still lake the ability for flexible slicing, that is by any combination of dimensions. The trie tensor as it is defined so far allows slicing positions to only suffix the slice keys, thus using $s = <:, 3, :>$ as a slice key is not possible. Felxible slicing must always be maintained to enable resolving triple patterns (Sec. \ref{sec:rdf_tensor}). Tentris uses \textit{hypertrie}, a novel trie-based data structure, for holding the keys of an RDF tensor. Hypertrie generalize the normal trie tensor concept by enabling the efficient slicing by any combination of dimensions. Hypertrie is defined formally based on Tentris paper \cite{tentris2020} in the following:\\
 
 \begin{definition}
 	\label{def:bht}
@@ -214,7 +214,7 @@ Figure \ref{fig:rdf_hypertrie} shows a hypertrie storing the RDF triples shown i
 \begin{figure}[h]
 	\centering
 	\includegraphics{figures/chapter2/hypertrie4_slices}
-	\caption{Slicing a hypertrie using a tensor slice key can be done simply by following the path from the root node using the fixed key parts in the key in any combination at the corresponding positions. Nodes (a) and (c) are leaf nodes representing slicing an RDF tensor by a single slicing position. (b) is in an inner node that represents a 2D tensor slice.}
+	\caption{Slicing a hypertrie using a tensor slice key can be done by following the path from the root node using the fixed key parts in the key in any combination at the corresponding positions. Nodes (a) and (c) are leaf nodes representing slicing an RDF tensor by slice key with a single slicing position. (b) is in an inner node that represents a 2D tensor slice.}
 	\label{fig:rdf_hypertrie_slice}
 \end{figure}
 \clearpage
