@@ -150,17 +150,22 @@ The ability to bridge SPARQL algebra to tensor operations is a strict requiremen
 	let $tp$ be a triple pattern defined as \verb|<?person ex:type ?type>| to be evaluated against the RDF graph $g$ in table \ref{tab:rdf_graph_example}.  An equivalent slice key $s$ for $tp$ is $s=$\verb|<:, 6, :>|. Slicing the RDF tensor $T_{g}$ (Fig. \ref{fig:rdf_tensor}) using $s$ results in an order-2 tensor with two non-zero entries (3, 7), (5, 7). Thus, the set of solution mappings is:\\ $\Omega = \{[?person \to res_{RT}(3), ?type \to res_{RT}(7)], [?person \to res_{RT}(5), ?type \to res_{RT}(7)]\}$.
 \end{example}
 
+\paragraph{Basic Graph Pattern}
+Tentris relies on Einstein summation to evaluate basic graph patterns (BGPs). The idea is simple based on \cite{tentris2020}: "Triple patterns are resolved first and combined
+via Einstein notation later using the variables of the triple patterns as labels subscripting
+the operands (tensor slices). The result is subscripted with all used variables. The Einstein summation ensures that only non-zero entries of an operand are incorporated into
+the result that matched with non-zero entries of the other operands only. Otherwise, values are set to zero as at least one of the operands resolves to zero".
 \clearpage
 
 \subsection{Tentris and Hypertrie}
 \label{sec:hypertrie}
-Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structure, I first clarify how tensors storing RDF graphs can be represented as tries. Then, I show why this is not engouh for our use case. \myworries{rephrase the concept}.
+Underlying the order-d RDF tensor concept, Tentris realizes the concept using a novel data structure called Hypertrie. Before I discuss hypertrie structur, I first clarify how tensors storing RDF graphs can be represented as tries.\\
 
 \subsubsection{Trie}
 \label{sec:trie}
 A \textit{Trie} \cite{Brass:2008:ADS:1434862} is a tree structure used to store \textit{sequences of characters} from an alphabet $\mathbb{A}$. An example of an alphabet is the ASCII codes set. Sequences, in this case, are strings. A node in a Trie contains potentially one outgoing edge for each possible character. Each node in the tree corresponds to a prefix of some sequences of the set, so if the same prefix occurs several times, there is only one node to represent it.\\
 
-A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$| \cite{Brass:2008:ADS:1434862}. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. This approach, however, becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to store edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys corresponds to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
+A possible realization of a Trie node is to use a pointer array of the size |$\mathbb{A}$| \cite{Brass:2008:ADS:1434862}. Each pointer points to either another trie node or null. Each array entry corresponds to a character in the alphabet. As an array lookup operation is computationally constant, looking up sequences in the Trie is fast and requires only $O(k)$ time where $k$ is the sequence size. However, this approach becomes space-inefficient as the size of the alphabet set increases or when it is infinite. An alternative way to store edges is to maintain a hash table $HT$ whose size will increase as we add distinct edges. The hash table keys correspond to \textit{edge labels} (characters) and are mapped to the node pointers (edges). Following that, the structure can still be used efficiently to retrieve sequences as accessing keys in a well-implemented sparse hash table is nearly constant. \\ 
 
 A \textit{fixed-depth trie} $C$ is a trie that holds sequences of the same length $n$, termed as $keys$. In that case, a sequence $l = <l_0, … , l_m> \in \mathbb{A}^m$ of length $m <= n$ forms a \textit{key prefix}. $C[l]$ is defined as the node that is reached from the root node $r$ by walking along the nodes with edge labels equal to the entries of $l$. Hence, $C[l]$ could be undefined if no appropriate path exists. Moreover, \\
 
@@ -169,18 +174,19 @@ We can represent a tensor $T_g \in \mathbb{B}^{\mathbb{N}_n \times \mathbb{N}_n 
 
 Resolving a tensor trie $C_T$ of depth $d$ by key prefix $l = <k_0, ..., k_m>$ where $m<d$ is equavalent to slicing the corresponding $d$-order tensor using a slice key $s = <k_0, ..., k_m, e_{m+1}, ...,e_d>$ with $e_i$ = \textbf{:}. Then the resultant tensor slice $T[k_0, ..., k_m, e_{m+1}, ...,e_d]$ ($d^{'}$-order where $d^{'}=d-m$) is represented by an inner trie node or \textit{subtrie} of depth $d^{'}$. \\
 
-In the context of this writing, the term \textit{node depth} corresponds to the sequences length that a node holds. For a trie tensor $C_T$ of depth $d$. The root node is assigned the depth $d$, an inner node holding prefix of size $m$, has the depth $d^{'}=d-m$. Leaf nodes share the depth 1. An example of a trie tensor is showed in figure \ref{fig:rdf_trie}.  \\
+In this writing context, the term \textit{node depth} corresponds to the length of the sequence that a node holds. For a trie tensor $C_T$ of depth $d$. The root node is assigned the depth $d$, an inner node holding prefix of size $m$ has the depth $d^{'}=d-m$. Leaf nodes share the depth 1. An example of a trie tensor is showed in figure \ref{fig:rdf_trie}.  \\
 
 \begin{figure}[h]
 	\centering
 	\includegraphics{figures/chapter2/trie4}
-	\caption{Trie representation of the tensor $T_g$ that depicts the RDF graph $g$ in  Table \ref{tab:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
+	\caption{Trie representation of the RDF tensor $T_g$ of the RDF graph $g$ in table \ref{tab:rdf_tensor}. A slice $T_g[3, :, :]$ by the first dimension with 3 is shown in the red (inner) box.}
 	\label{fig:rdf_trie}
 \end{figure}
 \clearpage
 
 
 \subsubsection{Hypertrie}
+\label{sec:hypertrie_pre}
 In the previous section we defined a trie as a data strucuture for realizing an order-3 RDF tensor. The structure is memory-efficient as it sparsely encodes a Boolean-valued tensor by storing only the keys that map to 1. As keys with the same key prefixes share the same node, a moderate level of compression is achieved. Slicing is also efficient if the set of edges to children are represented using a well-designed hashtable or search tree\cite{bras}. \\
 
 A trie, as defined earlier, however, still lake the ability for flexible slicing, that is by any combination of dimensions. The trie tensor as it is defined so far allows slicing positions to only suffix the slice keys, thus using $s = <:, 3, :>$ as a slice key is not possible. Felxible slicing mush alwasy be maintained to enable resolving triple patterns (Sec. \myworries{???}). Tentris uses \textit{Hypertrie}, a novel trie-based data structure, for holding the keys of an RDF tensor. Hypertrie generalize the normal trie tensor concept by enabling the efficient slicing by any combination of dimensions. Hypertrie is defined formally based on Tentris paper \cite{tentris2020} in the following:\\
@@ -196,14 +202,7 @@ A trie, as defined earlier, however, still lake the ability for flexible slicing
 	For a hypertrie $h$, $z(h)$ is the size of the set or mapping it encodes.
 \end{definition}
 
-\myworries{Continue like this} Informally, a ..... \\
-
 Figure \ref{fig:rdf_hypertrie} shows a hypertrie storing the RDF triples shown in table \ref{tab:rdf_graph_example}. Examples for slicing hypertrie with different slice keys corresponding to various combinations of slicing positions is presented in figure \ref{fig:rdf_hypertrie_slice}. \\
-
-\myworries{add definition here as needed}
-
-Add the concept of node \myworries{$processed\_nodes: \mathbb{B}^3 \to node$ }
-\clearpage
 
 \begin{sidewaysfigure}[h]
 		\centering
